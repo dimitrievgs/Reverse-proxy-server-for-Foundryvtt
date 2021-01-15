@@ -19,6 +19,8 @@ Wireguard, ниже), позже проведу ревизию.
 ![](media/image3.jpg){width="6.267716535433071in"
 height="3.013888888888889in"}
 
+![](media/image3.jpg?raw=true)
+
 ## 1. vps/vds-провайдер
 
 ИМХО, но тем не менее:
