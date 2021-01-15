@@ -44,6 +44,8 @@ Beget такой возможности нет, но соединение на �
 Статья на хабре:
 [[https://habr.com/ru/company/vdsina/blog/521388/]{.ul}](https://habr.com/ru/company/vdsina/blog/521388/)
 
+[link](https://habr.com/ru/company/vdsina/blog/521388/){:target="_blank"}
+
 Статья 2:
 [[https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442]{.ul}](https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442)
 
