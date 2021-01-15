@@ -42,15 +42,7 @@ Beget такой возможности нет, но соединение на �
 Пароль: \<root_password\>
 
 Статья на хабре:
-[[https://habr.com/ru/company/vdsina/blog/521388/]{.ul}](https://habr.com/ru/company/vdsina/blog/521388/)
-
-[link](https://habr.com/ru/company/vdsina/blog/521388/){:target="_blank"}
-<a href="https://habr.com/ru/company/vdsina/blog/521388/" target="_blank">Hello, world!</a>
-
-<a href="http://www.starfall.com/" target="_blank">Starfall</a>
-
-<a href="https://habr.com/ru/company/vdsina/blog/521388/" target="popup" onclick="window.open('../html-link.htm','name','width=600,height=400')">Open page in new window</a>.
-
+<https://habr.com/ru/company/vdsina/blog/521388/>
 
 Статья 2:
 [[https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442]{.ul}](https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442)
