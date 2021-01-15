@@ -49,6 +49,7 @@ Beget такой возможности нет, но соединение на �
 
 <a href="http://www.starfall.com/" target="_blank">Starfall</a>
 
+<a href="https://habr.com/ru/company/vdsina/blog/521388/" target="popup" onclick="window.open('../html-link.htm','name','width=600,height=400')">Open page in new window</a>.
 
 
 Статья 2:
