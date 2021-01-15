@@ -688,7 +688,7 @@ server {
 
 \# Enter your fully qualified domain name or leave blank
 
-server_name **<domain_name> www.<domain_name>**;
+server_name **\<domain_name> www.<domain_name>\**;
 
 \# Listen on port 80 without SSL certificates
 
