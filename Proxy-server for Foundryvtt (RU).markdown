@@ -47,6 +47,9 @@ Beget такой возможности нет, но соединение на �
 [link](https://habr.com/ru/company/vdsina/blog/521388/){:target="_blank"}
 <a href="https://habr.com/ru/company/vdsina/blog/521388/" target="_blank">Hello, world!</a>
 
+<a href="http://www.starfall.com/" target="_blank">Starfall</a>
+
+
 
 Статья 2:
 [[https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442]{.ul}](https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442)
