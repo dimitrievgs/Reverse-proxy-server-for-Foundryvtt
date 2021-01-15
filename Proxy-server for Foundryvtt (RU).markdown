@@ -21,6 +21,9 @@ height="3.013888888888889in"}
 
 ![](media/image3.jpg?raw=true)
 
+![](media/image2.jpg){width="6.267716535433071in"
+height="5.902777777777778in"}
+
 ## 1. vps/vds-провайдер
 
 ИМХО, но тем не менее:
