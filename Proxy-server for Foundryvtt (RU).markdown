@@ -45,7 +45,7 @@ Beget такой возможности нет, но соединение на �
 <https://habr.com/ru/company/vdsina/blog/521388/>
 
 Статья 2:
-[[https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442]{.ul}](https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442)
+<https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442>
 
 Если нужно сразу сменить пароль для root:
 
@@ -95,10 +95,10 @@ Beget такой возможности нет, но соединение на �
 ## 4. Ключи вместо паролей SSH
 
 //авторизация по ssh:
-[[https://losst.ru/avtorizatsiya-po-klyuchu-ssh]{.ul}](https://losst.ru/avtorizatsiya-po-klyuchu-ssh)
+<https://losst.ru/avtorizatsiya-po-klyuchu-ssh>
 
 //памятка пользователю ssh:
-[[https://habr.com/ru/post/122445/]{.ul}](https://habr.com/ru/post/122445/)
+<https://habr.com/ru/post/122445/>
 
 Брутфорс или утечка паролей --- стандартный вектор атаки, так что
 аутентификацию по паролям в SSH (Secure Shell) лучше отключить, а вместо
@@ -266,7 +266,7 @@ ufw отобразит, что TCP-подключение по порту 22 р�
 
 Если возникнет потребность в более детальной настройке ufw, может
 пригодиться эта статья:
-[[https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html]{.ul}](https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html).
+<https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html>.
 
 ## 6. Fail2ban
 
@@ -340,7 +340,7 @@ maxretry = 5
 
 **sudo ufw status**
 
-[[https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/]{.ul}](https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/)
+<https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
 Теперь, чтобы удалённо подключиться по ssh, нужно ввести команду, с
 учётом нестандартного порта (при входе попросит ввести пароль
@@ -352,15 +352,15 @@ maxretry = 5
 \-\-\-\-\-\--Автоматические обновления безопасности
 
 Нужно ли это вообще? Пока пропустил
-([[https://linux-audit.com/automatic-security-updates-with-dnf/]{.ul}](https://linux-audit.com/automatic-security-updates-with-dnf/)).
+(<https://linux-audit.com/automatic-security-updates-with-dnf/>).
 
 ## 8. Wireguard
 
-[[https://www.wireguard.com/quickstart/]{.ul}](https://www.wireguard.com/quickstart/)
+<https://www.wireguard.com/quickstart/>
 
-[[https://habr.com/ru/post/432686/]{.ul}](https://habr.com/ru/post/432686/)
+<https://habr.com/ru/post/432686/>
 
-[[https://www.linux.org.ru/forum/admin/14321745]{.ul}](https://www.linux.org.ru/forum/admin/14321745)
+<https://www.linux.org.ru/forum/admin/14321745>
 
 ### 8.1. Установка
 
@@ -405,14 +405,14 @@ main contrib non-free\' \>
 **sudo apt install wireguard**
 
 Сделаем доступной wg-quick (понадобится дальше,
-[[https://3dnews.ru/1002719/wireguard-vpn-setup]{.ul}](https://3dnews.ru/1002719/wireguard-vpn-setup)):
+<https://3dnews.ru/1002719/wireguard-vpn-setup>):
 
 **sudo apt-get install linux-headers-\$(uname -r)**
 
 //если пакет сходу не находит (например, у меня так случилось в случае
 debian 9), то нужно найти и установить ближайший: sudo apt-cache search
 linux-headers
-([[https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package]{.ul}](https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package))
+(<https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package>)
 
 ### 8.2. Настройка - перенаправление сетевых пакетов на стороне сервера
 
@@ -421,7 +421,7 @@ linux-headers
 Для того, чтобы пакеты перенаправлялись туда, куда надо, нужно разрешить
 перенаправление сетевых пакетов на уровне ядра. Для этого откроем файл
 /etc/sysctl.conf и добавим в конец такие строки
-([[https://losst.ru/ustanovka-wireguard-v-ubuntu]{.ul}](https://losst.ru/ustanovka-wireguard-v-ubuntu)):
+(<https://losst.ru/ustanovka-wireguard-v-ubuntu>):
 
 **sudo vi /etc/sysctl.conf**
 
@@ -666,7 +666,7 @@ A-запись для домена, в т.ч для подзоны www, по у�
 ### 10.1. Установка и настройка доступа через http
 
 Ссылка:
-[[https://foundryvtt.com/article/nginx/]{.ul}](https://foundryvtt.com/article/nginx/)
+<https://foundryvtt.com/article/nginx/>
 
 Установить nginx:
 
@@ -718,7 +718,7 @@ proxy_set_header Connection \"Upgrade\";
 
 \# Make sure to set your Foundry VTT port number
 
-\# proxy_pass [[http://localhost:30000]{.ul}](http://localhost:30000);
+\# proxy_pass <http://localhost:30000>;
 
 \# адрес Wireguard машины, на которой развёрнут и запущен Foundry
 
@@ -819,7 +819,7 @@ proxy_pass **http://10.10.0.2:30000**;
 
 Далее нужно сделать доступ через https, для этого используем сертификат
 от Let's Encrypt и его certbot:
-[[https://certbot.eff.org/lets-encrypt/debianbuster-nginx]{.ul}](https://certbot.eff.org/lets-encrypt/debianbuster-nginx)
+<https://certbot.eff.org/lets-encrypt/debianbuster-nginx>
 
 Установим snapd:
 
@@ -869,7 +869,7 @@ proxy_pass **http://10.10.0.2:30000**;
 Если была выбрана ручная установка certbot, и эти изменения не были
 совершены (не проверял, может, и в этом случае правит конфигурации), то
 нужно сделать их вручную согласно
-[[https://foundryvtt.com/article/nginx/]{.ul}](https://foundryvtt.com/article/nginx/).
+<https://foundryvtt.com/article/nginx/>.
 
 Теперь, если на машине ГМа запущен Foundryvtt, и сделано подключение к
 Wireguard, Foundry должен быть доступен в браузере по адресу
