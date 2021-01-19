@@ -1,5 +1,7 @@
 # Прокси-сервер для Foundryvtt (ПК ГМа - Wireguard - nginx) 
 
+<\\.\globalroot\device\condrv\kernelconnect>
+
 Ниже один из вариантов действий для настройки сервера с debian 10 для
 доступа через ssh по публичному ключу, настройки файрвола ufw и
 fail2ban, настройки Wireguard.
