@@ -18,7 +18,7 @@ Wireguard, ниже), позже проведу ревизию.
 
 Кратко о том, что будет сделано ниже:
 
-![](media/structure.jpg)
+![](media/Proxy-server_Foundryvtt_scheme_ru.png)
 
 ## 1. vps/vds-провайдер
 
