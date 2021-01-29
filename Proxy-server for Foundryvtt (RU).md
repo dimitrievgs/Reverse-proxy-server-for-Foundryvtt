@@ -222,44 +222,56 @@ sudo ssh-keygen
 Можно проверить, что ключ "дошёл", для этого на стороне сервера введём
 команду
 
-**vi /home/<username>/.ssh/authorized_keys**
+```
+vi /home/<username>/.ssh/authorized_keys
+```
 
 В данный момент можно подключиться к серверу со стороны клиента по
 паролю, ключ не задействован (но лучше этого не делать):
 
-**ssh <username>@\<server_ip_address\>**
+```
+ssh <username>@<server_ip_address>
+```
 
 Поэтому далее отключаем удаленный заход с помощью ssh из-под рута и
 использование паролей, для этого правим:
 
-**vi /etc/ssh/sshd_config**
+```
+vi /etc/ssh/sshd_config
+```
 
 Итого раскомментировать, где нужно, и установить (в VIM переход в режим
 редактирования нажатием кнопки Insert, вставка текста из буфера обмена
 Shift+Insert, удаление всего текста с данной позиции Esc + :.,\$d +
 Enter, выход без записи :q!):
 
-**PermitRootLogin no**
+```
+PermitRootLogin no
 
-**PubkeyAuthentication yes**
+PubkeyAuthentication yes
 
-**PasswordAuthentication no**
+PasswordAuthentication no
 
-**ChallengeResponseAuthentication no**
+ChallengeResponseAuthentication no
 
-**UsePAM no**
+UsePAM no
+```
 
 \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
 
 Перезапустим демон ssh, чтобы изменения вступили в силу:
 
-**sudo systemctl restart ssh**
+```
+sudo systemctl restart ssh
+```
 
 В данный момент со стороны клиента подключение к серверу возможно
 командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
 
-**sudo ssh <username>@\<server_ip_address\> -i
-/root/.ssh/\<custom_server_key_file\>**
+```
+sudo ssh <username>@<server_ip_address> -i
+/root/.ssh/<custom_server_key_file>
+```
 
 ## 5. Файрвол
 
@@ -271,27 +283,37 @@ Enter, выход без записи :q!):
 В качестве файрвола воспользуемся ufw. Если он ещё не установлен,
 установим его:
 
-**sudo apt install ufw**
+```
+sudo apt install ufw
+```
 
 Внесём SSH в список исключений файрвола (иначе после запуска файрвола мы
 не сможем подключиться к серверу):
 
-**sudo ufw allow ssh**
+```
+sudo ufw allow ssh
+```
 
 Теперь запустим файрвол:
 
-**sudo ufw enable**
+```
+sudo ufw enable
+```
 
 Теперь можно проверить статус файрвола, введя:
 
-**sudo ufw status**
+```
+sudo ufw status
+```
 
 ufw отобразит, что TCP-подключение по порту 22 разрешено (для ssh
 стандартный порт 22): 22/tcp - ALLOW - Anywhere
 
 В случае, если понадобится перезапуск файрвола:
 
-**sudo systemctl restart ufw**
+```
+sudo systemctl restart ufw
+```
 
 Вероятно, теперь станет видно, как активно внешний мир пытается общаться
 с сервером, и начнут появляться сообщения вида "\[UFW BLOCK\]".
@@ -311,13 +333,17 @@ ufw отобразит, что TCP-подключение по порту 22 р�
 
 Установим fail2ban:
 
-**sudo apt install fail2ban**
+```
+sudo apt install fail2ban
+```
 
 Запустим и установим запуск при старте системы:
 
-**sudo systemctl start fail2ban**
+```
+sudo systemctl start fail2ban
 
-**sudo systemctl enable fail2ban**
+sudo systemctl enable fail2ban
+```
 
 В программе два конфигурационных файла: /etc/fail2ban/fail2ban.conf и
 /etc/fail2ban/jail.conf. Ограничения для бана указываются во втором
@@ -326,7 +352,8 @@ ufw отобразит, что TCP-подключение по порту 22 р�
 Джейл для SSH включён по умолчанию с дефолтными настройками (5 попыток,
 интервал 10 минут, бан на 10 минут).
 
-\[DEFAULT\]
+```
+[DEFAULT]
 
 ignorecommand =
 
@@ -335,6 +362,7 @@ bantime = 10m
 findtime = 10m
 
 maxretry = 5
+```
 
 Кроме SSH, Fail2Ban может защищать и другие сервисы на веб-сервере nginx
 или Apache.
@@ -348,38 +376,50 @@ maxretry = 5
 Номер порта можно настроить, изменив директиву Port 22 в файле
 конфигурации
 
-**sudo vi /etc/ssh/sshd_config**
+```
+sudo vi /etc/ssh/sshd_config
+```
 
 Поставим
 
-**Port \<custom_ssh_port\>**
+```
+Port <custom_ssh_port>
+```
 
 Ещё раз перезапустим демон ssh, чтобы изменения вступили в силу:
 
-**sudo systemctl restart ssh**
+```
+sudo systemctl restart ssh
+```
 
 Теперь также нужно внести соответствующее изменение для ufw:
 
-**sudo ufw allow \<custom_ssh_port\>/tcp**
+```
+sudo ufw allow <custom_ssh_port>/tcp
+```
 
-Чтобы откатить обратно: sudo ufw delete allow \<custom_ssh_port\>/tcp
+Чтобы откатить обратно: sudo ufw delete allow <custom_ssh_port>/tcp
 
 Теперь удалим правило на разрешение общения через TCP по 22 порту:
 
-**sudo ufw delete allow 22/tcp**
+```
+sudo ufw delete allow 22/tcp
+```
 
 Проверить, какие подключения в данный момент разрешены:
 
-**sudo ufw status**
+```
+sudo ufw status
+```
 
 <https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
 Теперь, чтобы удалённо подключиться по ssh, нужно ввести команду, с
 учётом нестандартного порта (при входе попросит ввести пароль
-\<ssh_key_pass\>):
+<ssh_key_pass>):
 
-**sudo ssh <username>@\<server_ip_address\> -i
-/root/.ssh/\<custom_server_key_file\> -p \<custom_ssh_port\>**
+**sudo ssh <username>@<server_ip_address> -i
+/root/.ssh/<custom_server_key_file> -p <custom_ssh_port>**
 
 \-\-\-\-\-\--Автоматические обновления безопасности
 
@@ -408,10 +448,14 @@ maxretry = 5
 через add-apt-repository, но эта возможность до debian 11 работать не
 будет:
 
-**apt-get install software-properties-common** //теперь доступна команда
-add-apt-repository
+```
+apt-get install software-properties-common
+``` 
+//теперь доступна команда add-apt-repository
 
-**sudo add-apt-repository ppa:wireguard/wireguard**
+```
+sudo add-apt-repository ppa:wireguard/wireguard
+```
 
 б) если debian \~10 (с оговорками 9).
 
@@ -421,25 +465,33 @@ wireguard нет. Эта строка говорит пакет-менеджер
 пакетов (а contrib / non-free - разделы в которых apt будет искать
 главный contributed и несвободный софт):
 
-**sudo sh -c \"echo \'deb http://deb.debian.org/debian buster-backports
+```
+sudo sh -c \"echo \'deb http://deb.debian.org/debian buster-backports
 main contrib non-free\' \>
-/etc/apt/sources.list.d/buster-backports.list\"**
+/etc/apt/sources.list.d/buster-backports.list\"
+```
 
 Подключение репозитория для debian / ubuntu сделано. Теперь обновим
 пакеты:
 
-**sudo apt-get update**
+```
+sudo apt-get update
 
-**sudo apt-get upgrade**
+sudo apt-get upgrade
+```
 
 Установим Wireguard:
 
-**sudo apt install wireguard**
+```
+sudo apt install wireguard
+```
 
 Сделаем доступной wg-quick (понадобится дальше,
 <https://3dnews.ru/1002719/wireguard-vpn-setup>):
 
-**sudo apt-get install linux-headers-\$(uname -r)**
+```
+sudo apt-get install linux-headers-\$(uname -r)
+```
 
 //если пакет сходу не находит (например, у меня так случилось в случае
 debian 9), то нужно найти и установить ближайший: sudo apt-cache search
@@ -455,26 +507,30 @@ linux-headers
 /etc/sysctl.conf и добавим в конец такие строки
 (<https://losst.ru/ustanovka-wireguard-v-ubuntu>):
 
-**sudo vi /etc/sysctl.conf**
+```
+sudo vi /etc/sysctl.conf
 
-**net.ipv4.ip_forward = 1**
+net.ipv4.ip_forward = 1
 
-**net.ipv6.conf.default.forwarding = 1**
+net.ipv6.conf.default.forwarding = 1
 
-**net.ipv6.conf.all.forwarding = 1**
+net.ipv6.conf.all.forwarding = 1
 
-**net.ipv4.conf.all.rp_filter = 1**
+net.ipv4.conf.all.rp_filter = 1
 
-**net.ipv4.conf.default.proxy_arp = 0**
+net.ipv4.conf.default.proxy_arp = 0
 
-**net.ipv4.conf.default.send_redirects = 1**
+net.ipv4.conf.default.send_redirects = 1
 
-**net.ipv4.conf.all.send_redirects = 0**
+net.ipv4.conf.all.send_redirects = 0
+```
 
 Затем необходимо выполнить команду sysctl -p, чтобы система перечитала
 конфигурацию:
 
-**sudo sysctl -p**
+```
+sudo sysctl -p
+```
 
 ### 8.3. Генерация пар публичный - приватный ключ
 
@@ -486,11 +542,15 @@ server_public.key**
 
 просмотреть ключи:
 
-**cat server_private.key**
+```
+cat server_private.key
+```
 
 //8JNvz....
 
-**cat server_public.key**
+```
+cat server_public.key
+```
 
 //+tYEi\...
 
@@ -500,12 +560,14 @@ server_public.key**
 
 Генерация ключей клиента:
 
-**wg genkey \| sudo tee client_private.key \| wg pubkey \| sudo tee
-client_public.key**
+```
+wg genkey \| sudo tee client_private.key \| wg pubkey \| sudo tee
+client_public.key
 
-**cat client_private.key**
+cat client_private.key
 
-**cat client_public.key**
+cat client_public.key
+```
 
 Пусть нам нужно создать сеть на N клиентов (что не совсем корректно, в
 рамках Wireguard все считаются пирами), я просто взял и сгенерировал
@@ -527,39 +589,44 @@ public: a3L4e\...
 по пути /etc/wireguard/\<wg_0\>.conf и будет выглядеть следующим образом
 (открыл конфигурацию через ssh и внёс туда текст типа):
 
-**sudo vi /etc/wireguard/\<wg_0\>.conf**
+```
+sudo vi /etc/wireguard/<wg_0>.conf
+```
 
 Текст конфигурации для сервера:
 
-\[Interface\]
+```
+
+[Interface]
 
 Address = 10.10.0.1/24
 
-ListenPort = **\<custom_wireguard_port\>**
+ListenPort = **<custom_wireguard_port>**
 
-PrivateKey = **\<server_private\>**
+PrivateKey = **<server_private>**
 
-PostUp = iptables -A FORWARD -i **\<wg_0\>** -j ACCEPT; iptables -t nat
+PostUp = iptables -A FORWARD -i **<wg_0>** -j ACCEPT; iptables -t nat
 -A POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -A FORWARD -i
-**\<wg_0\>** -j ACCEPT; ip6tables -t nat -A POSTROUTING -o enp0s8 -j
+**<wg_0>** -j ACCEPT; ip6tables -t nat -A POSTROUTING -o enp0s8 -j
 MASQUERADE
 
-PostDown = iptables -D FORWARD -i **\<wg_0\>** -j ACCEPT; iptables -t
+PostDown = iptables -D FORWARD -i **<wg_0>** -j ACCEPT; iptables -t
 nat -D POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -D FORWARD -i
-**\<wg_0\>** -j ACCEPT; ip6tables -t nat -D POSTROUTING -o enp0s8 -j
+**<wg_0>** -j ACCEPT; ip6tables -t nat -D POSTROUTING -o enp0s8 -j
 MASQUERADE
 
-\[Peer\]
+[Peer]
 
-PublicKey = **\<client_public_N\>**
+PublicKey = **<client_public_N>**
 
-AllowedIPs = 10.10.0.\<N+1\>/32
+AllowedIPs = 10.10.0.<N+1>/32
 
-\[Peer\]
+[Peer]
 
-PublicKey = **\<client_public_N+1\>**
+PublicKey = **<client_public_N+1>**
 
-AllowedIPs = 10.10.0.\<N+2\>/32
+AllowedIPs = 10.10.0.<N+2>/32
+```
 
 //Сладко: \<custom_wireguard_port\> также является wg_0 в PostUp и
 PostDown. AllowedIPs отвечает за таблицу роутинга и, используя там 32,
@@ -569,25 +636,29 @@ PostDown. AllowedIPs отвечает за таблицу роутинга и, �
 
 Теперь создадим конфигурационные файлы для клиентов:
 
-**vi client\_\<N\>.conf**
+```
+vi client\_\<N\>.conf
+```
 
 Текст конфигурации для N-го клиента:
 
-\[Interface\]
+```
+[Interface]
 
-PrivateKey = **\<client_private_N\>**
+PrivateKey = **<client_private_N>**
 
-Address = 10.10.0.\<N+1\>/24
+Address = 10.10.0.<N+1>/24
 
-\[Peer\]
+[Peer]
 
-PublicKey = **\<server_public\>**
+PublicKey = **<server_public>**
 
-Endpoint = **\<server_ip_address\>**:**\<custom_wireguard_port\>**
+Endpoint = **<server_ip_address>**:**<custom_wireguard_port>**
 
 AllowedIPs = 10.10.0.0/24
 
 PersistentKeepalive = 25
+```
 
 Когда опция PersistentKeepAlive включена, пакет keepalive отправляется
 на конечную точку сервера один раз в некотором интервале секунд.
@@ -612,35 +683,45 @@ PersistentKeepalive = 25
 
 Для запуска интерфейса используем такую команду:
 
-**sudo wg-quick up \<wg_0\>**
+```
+sudo wg-quick up <wg_0>
+```
 
 //При этом wg-quick аналогично набору следующих команд (пишет в
 консоли):
 
-\~\$ sudo wg-quick up \<wg_0\>
+```
+~$ sudo wg-quick up <wg_0>
 
-\[\#\] ip link add \<wg_0\> type wireguard
+[#] ip link add <wg_0> type wireguard
 
-\[\#\] wg setconf \<wg_0\> /dev/fd/63
+[#] wg setconf <wg_0> /dev/fd/63
 
-\[\#\] ip -4 address add 10.0.0.2/24 dev \<wg_0\>
+[#] ip -4 address add 10.0.0.2/24 dev <wg_0>
 
-\[\#\] ip link set mtu 1420 up dev \<wg_0\>
+[#] ip link set mtu 1420 up dev <wg_0>
+```
 
 Аналогично можно использовать systemd:
 
-**sudo systemctl start wg-quick@\<wg_0\>**
+```
+sudo systemctl start wg-quick@<wg_0>
+```
 
 С помощью systemd можно настроить автозагрузку интерфейса Wireguard с
 нужной конфигурацией:
 
-**sudo systemctl enable wg-quick@\<wg_0\>**
+```
+sudo systemctl enable wg-quick@\<wg_0\>
+```
 
 Настройка файрвола:
 
-**sudo ufw allow \<custom_wireguard_port\>/udp**
+```
+sudo ufw allow <custom_wireguard_port>/udp
 
-**sudo ufw status**
+sudo ufw status
+```
 
 //перезапуск wireguard с нужной конфигурацией: **sudo systemctl restart
 wg-quick@\<wg_0\>**
@@ -675,13 +756,17 @@ Wireguard, в доверенные.
 серверы или разные IP виртуальной локальной сети), вначале
 отключим/уберём из автозагрузки все запущенные конфигурации:
 
-**sudo systemctl disable wg-quick@\<wg...\>**
+```
+sudo systemctl disable wg-quick@<wg...>
+```
 
 Затем просто поочередно запускать и останавливать нужные:
 
-**sudo systemctl stop wg-quick@\<wg_K\>**
+```
+sudo systemctl stop wg-quick@<wg_K>
 
-**sudo systemctl start wg-quick@\<wg_K+1\>**
+sudo systemctl start wg-quick@<wg_K+1>
+```
 
 ## 9. Регистрация домена и привязка его к ip vps'а
 
@@ -702,9 +787,11 @@ A-запись для домена, в т.ч для подзоны www, по у�
 
 Установить nginx:
 
-**sudo apt-get update**
+```
+sudo apt-get update
 
-**sudo apt-get install nginx**
+sudo apt-get install nginx
+```
 
 В файле **/etc/nginx/sites-available/foundryvtt** прописал нужную
 конфигурацию, в разделе server_name нужно указать зарегистрированный
@@ -712,8 +799,11 @@ A-запись для домена, в т.ч для подзоны www, по у�
 начала аренды vps (типа "134-X-X-X.cloudvps.regruhosting.ru"). Далее -
 **\<domain_name\>**.
 
-**sudo vi /etc/nginx/sites-available/foundryvtt**
+```
+sudo vi /etc/nginx/sites-available/foundryvtt
+```
 
+```
 \# Define Server
 
 server {
@@ -759,6 +849,7 @@ proxy_pass **http://10.10.0.2:30000**;
 }
 
 }
+```
 
 //похоже, не обязательно (работает и без этого в данном контексте), на
 стороне клиента с Foundry:
