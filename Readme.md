@@ -1,4 +1,4 @@
-# Прокси-сервер для Foundryvtt (ПК ГМа - Wireguard - nginx) 
+# Proxy server for Foundryvtt  
 
 This repository provides instructions for configuring a proxy server for Foundryvtt using ssh, wireguard, nginx, certbot, ufw, fail2ban.
 Instructions:
