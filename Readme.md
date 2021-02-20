@@ -1,6 +1,6 @@
 # Proxy server for Foundryvtt  
 
-This repository provides instructions for configuring a proxy server for Foundryvtt using ssh, wireguard, nginx, certbot, ufw, fail2ban.
+This repository provides instructions for configuring vps/vds as proxy server for Foundryvtt using ssh, wireguard, nginx, certbot, ufw, fail2ban.
 Instructions:
 
 * [in English (in the process of translation)](./Proxy-server%20for%20Foundryvtt%20(EN).md)  
