@@ -1,19 +1,27 @@
-# Прокси-сервер для Foundryvtt (ПК ГМа - Wireguard - nginx) 
+# Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
 
-Ниже один из вариантов настройки сервера с debian 10 для проксирования трафика с локальной машины ГМа, подключенной к виртуальной сети с помощью Wireguard, с одной стороны, к компьютеру игрока, подключенного через браузер к домену в интернете по защищенному соединению https, с другой стороны (и обратно). Позволяет водить партии нескольким ГМам одновременно, с помощью одного сервера (при этом выбирая минимальный тарифный план vps/vds, если сервер арендуется).
+Below is one of the options for configuring a server with debian 10 for traffic proxying from a local GM's machine connected to a virtual private network using Wireguard, on the one hand, to a player's computer connected through a browser to a domain in the Internet via a secure https connection, on the other hand (and back). It allows several GMs to conduct games simultaneously, using one server (while choosing the minimum tariff plan for vps / vds, if the server is rented). 
 
-Данные команды приведены для сервера на debian >=10, скорее всего, они также без изменений корректны для Ubuntu >=20 (>=18?), для другого дистрибутива нужно внести соответствующие корректировки. Действия на стороне сервера выделены красным кругом &#x1F534; в начале. На стороне клиента использовалась Ubuntu 20, все соответствующие действия выделены синим кругом &#x1F535; в начале (ubuntu была развернута внутри виртуальной машины virtualbox, сам факт виртуализации на вид команд не влияет). Для другой системы нужно будет сделать соответствующие изменения. 
+The advantages of this approach are that:
+1) If you need to rent a server, you can minimize costs, because a weak machine is enough to proxy traffic.
+2) In this case, you will prepare for the games from your computer, without wasting time receiving and sending traffic, as if it were if Foundryvtt itself was hosted on a remote rented server.
+3) Also, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system. All basic settings are made on the vps side, and you just need to install wireguard, add the configuration to it and open the UDP port in the firewall. No additional Foundryvtt configuration is required.
+4) No need to worry about fire safety, which would be smart if you kept your personal server at home and left it running.
+5) Allows multiple GMs to use one vps / vds server. 
+
+The downside is that:
+1) Players will only have access to Foundryvtt when your computer is turned on and wireguard and Foundryvtt are running and connected.
+2) You will be limited in choosing a provider for vps / vds, because:
+    * The server (from experience) makes sense to search within the same city where the master is connected to the Internet (physically). For example, if the master is in St. Petersburg and the server is in Moscow, delays will be noticeable.
+    * It also makes sense to choose a provider and tariff in order to have access through vnc in order to have more control over the machine. On the other hand, the stability of the connection and low latency are more important in this regard, although Beget does not have such an opportunity, but their connection in tests was more stable than that of Sprinthost, all other things being equal. 
+
+These commands are given for a server on debian> = 10, most likely, they are also correct without changes for Ubuntu> = 20 (> = 18?), For another distribution you need to make the appropriate adjustments. Server side actions are highlighted with a red circle &#x1F534; at the beginning. On the client side I was using Ubuntu 20, all relevant actions are highlighted with a blue circle &#x1F535; at the beginning (ubuntu was deployed inside a virtualbox virtual machine, the very fact of virtualization does not affect the type of commands). For another system, you will need to make the appropriate changes. 
 
 Кратко о том, что будет сделано ниже:
 
 ![](media/Proxy-server_Foundryvtt_scheme_ru.png)
 
 ## 1. vps/vds-провайдер
-
-ИМХО, но тем не менее:
-
-а) Сервер (по опыту) имеет смысл искать в пределах того же города, где мастер подключён к интернету (физически). Например, если мастер в СПб, а сервер в Москве, задержки будут заметны.
-б) Также имеет смысл подбирать провайдера и тариф, чтобы иметь доступ через vnc, чтобы иметь больше контроля над машиной. С другой стороны, стабильность соединения и малые задержки важнее, в этом плане, хоть у Beget такой возможности нет, но соединение на тестах у них было стабильнее, чем у Sprinthost при прочих равных.
 
 Провайдер предоставит пароль для пользователя **root** -
 **\<root_password\>** (допустим, по почте).
