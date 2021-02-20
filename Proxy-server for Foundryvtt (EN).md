@@ -19,7 +19,7 @@ These commands are given for a server on debian> = 10, most likely, they are als
 
 Кратко о том, что будет сделано ниже:
 
-![](media/Proxy-server_Foundryvtt_scheme_ru.png)
+![](media/Proxy-server_Foundryvtt_scheme_en.png)
 
 ## 1. vps/vds-провайдер
 
