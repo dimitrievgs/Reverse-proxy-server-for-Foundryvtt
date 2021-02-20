@@ -1,6 +1,6 @@
 # Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
 
-Below is one of the options for configuring a server with debian 10 for traffic proxying from a local GM's machine connected to a virtual private network using Wireguard, on the one hand, to a player's computer connected through a browser to a domain in the Internet via a secure https connection, on the other hand (and back). It allows several GMs to conduct games simultaneously, using one server (while choosing the minimum tariff plan for vps / vds, if the server is rented). 
+Below is one of the options for configuring vps/vds server with debian 10 for traffic proxying from a local GM's machine connected to a virtual private network using Wireguard, on the one hand, to a player's computer connected through a browser to a domain in the Internet via a secure https connection, on the other hand (and back). It allows several GMs to conduct games simultaneously, using one server (while choosing the minimum tariff plan for vps / vds, if the server is rented). 
 
 The advantages of this approach are that:
 1) If you need to rent a server, you can minimize costs, because a weak machine is enough to proxy traffic.
