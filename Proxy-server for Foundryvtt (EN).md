@@ -1,51 +1,59 @@
 # Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
 
-Below is one of the options for configuring vps/vds server with debian 10 for traffic proxying from a local GM's machine connected to a virtual private network using Wireguard, on the one hand, to a player's computer connected through a browser to a domain in the Internet via a secure https connection, on the other hand (and back). It allows several GMs to conduct games simultaneously, using one server (while choosing the minimum tariff plan for vps / vds, if the server is rented). 
+//the translation and editing is in the process
+
+Below is one of the options for configuring a server with debian 10 for proxying traffic from a local GM machine connected to a VLAN using Wireguard, on the one hand, to a player's computer connected through a browser to a domain on the Internet via a secure https connection, on the other hand ( and back). Allows to drive parties to several GMs at the same time, using one server (while choosing the minimum tariff plan vps / vds, if the server is rented). 
+
+<details>
+<summary>Advantages and disadvantages of this approach (may be subjective)</summary>
 
 The advantages of this approach are that:
-1) If you need to rent a server, you can minimize costs, because a weak machine is enough to proxy traffic.
-2) In this case, you will prepare for the games from your computer, without wasting time receiving and sending traffic, as if it were if Foundryvtt itself was hosted on a remote rented server.
-3) Also, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system. All basic settings are made on the vps side, and you just need to install wireguard, add the configuration to it and open the UDP port in the firewall. No additional Foundryvtt configuration is required.
-4) No need to worry about fire safety, which would be smart if you kept your personal server at home and left it running.
-5) Allows multiple GMs to use one vps / vds server. 
+1) In comparison with renting a full-fledged server for hosting Foundryvtt, you can minimize costs, because a weak machine is enough to proxy traffic.
+2) In comparison with placing Foundryvtt on a remote rented server, in this case you will prepare for games from your personal computer, without wasting time for receiving and sending traffic (if you keep your personal server at home, then, of course, delays are minimized).
+4) Compared to hosting Foundryvtt on a personal home server, there is no need to worry about fire safety.
+3) Compared to placing Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system, the logic of communication over the network is located on the vps side (not counting ssh and wireguard connections). You just need to install wireguard, add configuration to it and open a UDP port in the firewall. No additional Foundryvtt configuration is required.
+5) Compared to hosting Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, here on a personal computer you do not need to open TCP ports 80 (http), 443 (https).
+6) Compared to connecting players via a virtual private network, here players do not need to deal with this connection, just go to the domain name in the browser.
+7) Allows to use one vps / vds server for several GMs. 
 
-The downside is that:
-1) Players will only have access to Foundryvtt when your computer is turned on and wireguard and Foundryvtt are running and connected.
+The disadvantages are that:
+1) Players will only have access to Foundryvtt when the personal computer is turned on and wireguard and Foundryvtt are running and connected.
 2) You will be limited in choosing a provider for vps / vds, because:
     * The server (from experience) makes sense to search within the same city where the master is connected to the Internet (physically). For example, if the master is in St. Petersburg and the server is in Moscow, delays will be noticeable.
-    * It also makes sense to choose a provider and tariff in order to have access through vnc in order to have more control over the machine. On the other hand, the stability of the connection and low latency are more important in this regard, although Beget does not have such an opportunity, but their connection in tests was more stable than that of Sprinthost, all other things being equal. 
+    * It also makes sense to choose a provider and tariff in order to have access through vnc in order to have more control over the machine. On the other hand, connection stability and low latency may be more important. 
 
-These commands are given for a server on debian> = 10, most likely, they are also correct without changes for Ubuntu> = 20 (> = 18?), For another distribution you need to make the appropriate adjustments. Server side actions are highlighted with a red circle &#x1F534; at the beginning. On the client side I was using Ubuntu 20, all relevant actions are highlighted with a blue circle &#x1F535; at the beginning (ubuntu was deployed inside a virtualbox virtual machine, the very fact of virtualization does not affect the type of commands). For another system, you will need to make the appropriate changes. 
+</details>
 
-Кратко о том, что будет сделано ниже:
+These commands are given for a server on debian> = 10, most likely, they are also correct without changes for Ubuntu> = 20 (>=18?), For another distribution you need to make the appropriate adjustments. Server side actions are highlighted with a red circle &#x1F534; at the beginning. On the client side, I used Ubuntu 20, all relevant actions are highlighted in blue &#x1F535; at the beginning (ubuntu was deployed inside a virtualbox virtual machine, the very fact of virtualization does not affect the type of commands). For another system, you will need to make the appropriate changes. 
+
+Briefly about what will be done below: 
 
 ![](media/Proxy-server_Foundryvtt_scheme_en.png)
 
-## 1. vps/vds-провайдер
+## 1. vps/vds-provider
 
-Провайдер предоставит пароль для пользователя **root** -
-**\<root_password\>** (допустим, по почте).
+The provider will provide a password for the user **root** -
+**\<root_password\>** (let's say by mail).
 
-Пользователь: root
+User: root
 
-Пароль: \<root_password\>
+Password: \<root_password\>
 
-Статья на хабре:
+Article 1:
 <https://habr.com/ru/company/vdsina/blog/521388/>
 
-Статья 2:
+Article 2:
 <https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442>
 
-&#x1F534; Если нужно сразу сменить пароль для root:
+&#x1F534; If you need to immediately change the password for root:
 
 ```
 passwd root
 ```
 
-## 2. Подготовка сервера
+## 2. Server preparation
 
-Обновляем список пакетов из репозиториев, обновляем все установленные
-пакеты до актуальной версии.
+We update the list of packages from the repositories, update all installed packages to the current version. 
 
 ```
 apt-get update
@@ -53,125 +61,119 @@ apt-get update
 apt-get upgrade
 ```
 
-## 3. Нерутовый юзер, на сервере
+## 3. Non-root user, on the server 
 
-Поскольку у пользователя root абсолютные привилегии в системе, то, чтобы
-запретить ему удалённое администрирование, создадим нерутового
-пользователя, а для root отключим удалённое администрирование по ssh.
-Придумываем нерутового пользователя **\<username\>** и пароль для него
-**\<user_pass\>**:
+Since the root user has absolute privileges in the system, in order to prohibit him from remote administration, we will create a non-root user, and for root, disable remote administration via ssh.
+Coming up with a non-root user **\<username\>** and a password for him
+**\<user_pass\>**: 
 
 ```
 adduser <username>
 ```
 
-При этом сразу попросит ввести **\<user_pass\>** //позже можно сменить с помощью **passwd \<username\>**
+At the same time, it will immediately ask you to enter **\<user_pass\>** //later can be changed with **passwd \<username\>**
 
-Дальше попросит указать некоторую информацию для нового пользователя, можно просто несколько раз нажать Enter и затем Y.
+Next, he will ask you to specify some information for the new user, you can just press Enter several times and then Y. 
 
-Если sudo ещё не установлен, установим его:
+If sudo is not already installed, install it: 
 
 ```
 apt install sudo
 ```
 
-Теперь пользователя нужно добавить в группу, которая имеет право выполнять команды с повышением привилегий sudo:
+Now the user needs to be added to a group that has the right to execute commands with sudo privilege elevation: 
 
 ```
 usermod -aG sudo <username>
 ```
 
-//Можно проверить, что пользователь был добавлен в группу sudo: \"vi
+//It can be verified that the user has been added to the sudo group: \"vi
 /etc/group\" //закрыть Esc и \":q\"
 
-//Параллельно в /home/ должна была появиться папка \<username\>
+//In parallel, a folder should have appeared in /home/ - \<username\>
 
-## 4. Ключи вместо паролей SSH
+## 4. SSH - keys instead of passwords 
 
-//авторизация по ssh:
+//ssh authorization:
 <https://losst.ru/avtorizatsiya-po-klyuchu-ssh>
 
-//памятка пользователю ssh:
+//ssh user reminder:
 <https://habr.com/ru/post/122445/>
 
-Брутфорс или утечка паролей - стандартный вектор атаки, так что аутентификацию по паролям в SSH (Secure Shell) лучше отключить, а вместо
-неё использовать аутентификацию по ключам. Используем клиент openssh. В качестве альтернативы есть также, например, lsh и Dropbear.
+Brute force or password leakage is a standard attack vector, so it is better to disable SSH (Secure Shell) password authentication and use key authentication instead. We use the openssh client. Alternatively there are also, for example, lsh and Dropbear. 
 
 &#x1F535;
-Установка клиента OpenSSH на Ubuntu:
+Installing OpenSSH Client on Ubuntu:
 
 ```
 sudo apt install openssh-client
 ```
 
-&#x1F534; Установим на сервере:
+&#x1F534; Install on the server:
 
 ```
 sudo apt install openssh-server
 ```
 
-Запустим демона SSH на сервере
+Let's start the SSH daemon on the server 
 
 ```
 sudo systemctl start ssh
 ```
 
-Автоматический запуск демона при каждой загрузке:
+Start the daemon automatically on every boot:
 
 ```
 sudo systemctl enable ssh
 ```
 
-Создадим папку /home/\<username\>/.ssh/
+Let's create a folder /home/\<username\>/.ssh/
 
 ```
 mkdir -p /home/<username>/.ssh/
 ```
 
-Создадим в ней файл authorized_keys
+Let's create a file authorized_keys
 
 ```
 touch /home/<username>/.ssh/authorized_keys
 ```
 
-Проверка существования файла:
+Checking for file existence:
 
 ```
 ls -lh /home/<username>/.ssh/authorized_keys
 ```
 
-установим корректные разрешения для папки и файла:
+set the correct permissions for the folder and file:
 
 ```
 chmod 700 /home/<username>/.ssh && chmod 600 /home/<username>/.ssh/authorized_keys
 ```
 
-Изменим владельца и группу для каталога /home/\<username\>/.ssh на
-нерутового пользователя:
+Change the owner and group for the directory /home/\<username\>/.ssh to a non-root user:
 
 ```
 chown -R <username>:<username> /home/<username>/.ssh
 ```
 
-&#x1F535; Теперь на стороне клиента,
+&#x1F535; Now on the client side,
 
 **> Ubuntu 20:**
 
-создадим файл с ключом \<custom_server_key_file\> и отправим его на
-сервер, чтобы его содержимое было записано в файл \.../authorized_keys:
+create a file with the key \<custom_server_key_file\> и and send it to the server so that its contents are written to the file \.../authorized_keys:
 
 ```
 sudo mkdir -p /root/.ssh/
 ```
 
-Генерирую ssh-ключ для сервера, пароль для ssh-ключа: \<ssh_key_pass\>
+Generate ssh key for server, password for ssh key: \<ssh_key_pass\>
 
 ```
 sudo ssh-keygen
 ```
 
-В процессе попросит ввести путь до создаваемых приватного и публичного
-ключей:
+In the process, it will ask you to enter the path to the created private and public keys:
 
 > \>sudo ssh-keygen
 >
@@ -192,42 +194,34 @@ sudo ssh-keygen
 >
 > \<\...\>
 
-По умолчанию ssh-keygen любит кидать файлы в папку /home/ (?), поэтому
-нужно забивать полный путь, и все поддиректории должны существовать.
+By default, ssh-keygen likes to drop files into a folder /home/ (?), so the full path needs to be hammered in and all subdirectories must exist.
 
-Теперь перешлём публичный ключ серверу, чтобы он записал содержимое в
-файл /home/\<username\>/.ssh/authorized_keys:
+Now we will send the public key to the server so that it writes the contents to a file /home/\<username\>/.ssh/authorized_keys:
 
 ```
 sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
 <username>@<server_ip_address>
 ```
 
-&#x1F534; Можно проверить, что ключ "дошёл", для этого на стороне сервера введём
-команду
+&#x1F534; You can check that the key has "reached", for this on the server side, enter the command 
 
 ```
 vi /home/<username>/.ssh/authorized_keys
 ```
 
-&#x1F535; В данный момент можно подключиться к серверу со стороны клиента по
-паролю, ключ не задействован (но лучше этого не делать):
+&#x1F535; At the moment, you can connect to the server from the client side using a password, the key is not used (but it is better not to do this): 
 
 ```
 ssh <username>@<server_ip_address>
 ```
 
-&#x1F534; Поэтому далее отключаем удаленный заход с помощью ssh из-под рута и
-использование паролей, для этого правим:
+&#x1F534; Therefore, further we disable remote access using ssh from under root and the use of passwords, for this we correct: 
 
 ```
 vi /etc/ssh/sshd_config
 ```
 
-Итого раскомментировать, где нужно, и установить (в VIM переход в режим
-редактирования нажатием кнопки Insert, вставка текста из буфера обмена
-Shift+Insert, удаление всего текста с данной позиции Esc + :.,\$d +
-Enter, выход без записи :q!):
+In total, uncomment where necessary and install (in VIM, switch to editing mode by pressing the Insert button, insert text from the clipboard Shift+Insert, delete all text from this position Esc + :.,\$d + Enter, exit without writing :q!): 
 
 ```
 PermitRootLogin no
@@ -241,85 +235,71 @@ ChallengeResponseAuthentication no
 UsePAM no
 ```
 
-Перезапустим демон ssh, чтобы изменения вступили в силу:
+Restart the ssh daemon for the changes to take effect: 
 
 ```
 sudo systemctl restart ssh
 ```
 
-&#x1F535; В данный момент со стороны клиента подключение к серверу возможно
-командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
+&#x1F535; At the moment, from the client's side, connecting to the server is possible with a command (when entering, it will ask for a password **\<ssh_key_pass\>**):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
 /root/.ssh/<custom_server_key_file>
 ```
 
-## 5. Файрвол
+## 5. Firewall
 
-&#x1F534; Файрвол гарантирует, что на сервер пойдёт только тот трафик по тем
-портам, которые вы напрямую разрешили. Это защищает от эксплуатации
-портов, которые случайно включились с другими сервисами, то есть сильно
-уменьшает поверхность атаки.
+&#x1F534; The firewall ensures that only the traffic on the ports that you directly allow will go to the server. This protects against exploitation of ports that accidentally join with other services, that is, greatly reduces the attack surface. 
 
-В качестве файрвола воспользуемся ufw. Если он ещё не установлен,
-установим его:
+We will use ufw as a firewall. If it is not already installed, install it: 
 
 ```
 sudo apt install ufw
 ```
 
-Внесём SSH в список исключений файрвола (иначе после запуска файрвола мы
-не сможем подключиться к серверу):
+Let's add SSH to the list of firewall exceptions (otherwise, after starting the firewall, we will not be able to connect to the server): 
 
 ```
 sudo ufw allow ssh
 ```
 
-Теперь запустим файрвол:
+Now let's start the firewall: 
 
 ```
 sudo ufw enable
 ```
 
-Теперь можно проверить статус файрвола, введя:
+Now you can check the status of the firewall by entering: 
 
 ```
 sudo ufw status
 ```
 
-ufw отобразит, что TCP-подключение по порту 22 разрешено (для ssh
-стандартный порт 22): 22/tcp - ALLOW - Anywhere
+ufw will display that TCP connection on port 22 is allowed (for ssh the standard port is 22): 22/tcp - ALLOW - Anywhere
 
-В случае, если понадобится перезапуск файрвола:
+In case you need to restart the firewall: 
 
 ```
 sudo systemctl restart ufw
 ```
 
-Вероятно, теперь станет видно, как активно внешний мир пытается общаться
-с сервером, и начнут появляться сообщения вида "\[UFW BLOCK\]".
+Probably, now it will become visible how actively the outside world is trying to communicate with the server, and messages like "\[UFW BLOCK\]".
 
-Если возникнет потребность в более детальной настройке ufw, может
-пригодиться эта статья:
+If there is a need for a more detailed setup of ufw, this article may come in handy:
 <https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html>.
 
 ## 6. Fail2ban
 
-Сервис Fail2Ban анализирует логи на сервере и подсчитывает количество
-попыток доступа с каждого IP-адреса. В настройках указаны правила,
-сколько попыток доступа разрешено за определённый интервал --- после
-чего данный IP-адрес блокируется на заданный отрезок времени. Например,
-разрешаем 5 неудачных попыток аутентификации по SSH в промежуток 2 часа,
-после чего блокируем данный IP-адрес на 12 часов.
+The Fail2Ban service analyzes the logs on the server and counts the number of access attempts from each IP address. The settings specify the rules for how many access attempts are allowed for a certain interval - after which this IP address is blocked for a specified period of time. For example, we allow 5 unsuccessful SSH authentication attempts within 2 hours, after which we block this IP address for 12 hours. 
 
-Установим fail2ban:
+Install fail2ban:
 
 ```
 sudo apt install fail2ban
 ```
 
-Запустим и установим запуск при старте системы:
+Let's start and install the startup at system startup: 
 
 ```
 sudo systemctl start fail2ban
@@ -327,12 +307,9 @@ sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
 ```
 
-В программе два конфигурационных файла: /etc/fail2ban/fail2ban.conf и
-/etc/fail2ban/jail.conf. Ограничения для бана указываются во втором
-файле.
+The program has two configuration files: /etc/fail2ban/fail2ban.conf and /etc/fail2ban/jail.conf. The ban limits are specified in the second file. 
 
-Джейл для SSH включён по умолчанию с дефолтными настройками (5 попыток,
-интервал 10 минут, бан на 10 минут).
+Jail for SSH is enabled by default with default settings (5 attempts, interval 10 minutes, ban for 10 minutes). 
 
 ```
 [DEFAULT]
@@ -346,49 +323,45 @@ findtime = 10m
 maxretry = 5
 ```
 
-Кроме SSH, Fail2Ban может защищать и другие сервисы на веб-сервере nginx
-или Apache.
+In addition to SSH, Fail2Ban can protect other services on the nginx or Apache web server. 
 
-## 7. Смена портов по умолчанию
+## 7. Changing the default ports 
 
-Для ssh номер порта 22 задан по умолчанию. Чтобы уменьшить поверхность
-атаки (вопросы к <https://habr.com/ru/company/vdsina/blog/521388/>),
-изменим номер порта.
+For ssh, the default port number is 22. To reduce the attack surface (questions to <https://habr.com/ru/company/vdsina/blog/521388/>), let's change the port number. 
 
-Номер порта можно настроить, изменив директиву Port 22 в файле
-конфигурации
+The port number can be configured by changing the Port 22 directive in the configuration file 
 
 ```
 sudo vi /etc/ssh/sshd_config
 ```
 
-Поставим
+Let's put 
 
 ```
 Port <custom_ssh_port>
 ```
 
-Ещё раз перезапустим демон ssh, чтобы изменения вступили в силу:
+Restart the ssh daemon again for the changes to take effect: 
 
 ```
 sudo systemctl restart ssh
 ```
 
-Теперь также нужно внести соответствующее изменение для ufw:
+Now we also need to make the appropriate change for ufw: 
 
 ```
 sudo ufw allow <custom_ssh_port>/tcp
 ```
 
-Чтобы откатить обратно: sudo ufw delete allow <custom_ssh_port>/tcp
+To roll back: sudo ufw delete allow <custom_ssh_port>/tcp
 
-Теперь удалим правило на разрешение общения через TCP по 22 порту:
+Now let's remove the rule to allow communication via TCP on port 22:
 
 ```
 sudo ufw delete allow 22/tcp
 ```
 
-Проверить, какие подключения в данный момент разрешены:
+Check which connections are currently allowed:
 
 ```
 sudo ufw status
@@ -396,18 +369,16 @@ sudo ufw status
 
 <https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
-Теперь, чтобы удалённо подключиться по ssh, нужно ввести команду, с
-учётом нестандартного порта (при входе попросит ввести пароль
-<ssh_key_pass>):
+Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (when entering, it will ask you to enter the password  <ssh_key_pass>):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
 /root/.ssh/<custom_server_key_file> -p <custom_ssh_port>
 ```
 
-\-\-\-\-\-\--Автоматические обновления безопасности
+\-\-\-\-\-\--Automatic security updates 
 
-Нужно ли это вообще? Пока пропустил
+Is it necessary at all? Skipped for now
 (<https://linux-audit.com/automatic-security-updates-with-dnf/>).
 
 ## 8. Wireguard
@@ -420,34 +391,25 @@ sudo ssh <username>@<server_ip_address> -i
 
 ### 8.1. Установка
 
-Установим Wireguard на стороне сервера и &#x1F535; на стороне клиента. &#x1F534; В рамках
-сети, которую мы развернём, оба будут формально являться пирами, но,
-чтобы сеть "работала", как минимум у одного из них (в данной случае у
-"сервера") должен быть "белый" ip. Итак, на стороне сервера и на стороне
-клиента, добавим соответствующий репозиторий:
+Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we will deploy, both will formally be peers, but,
+for the network to "work", at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository: 
 
-а) если debian \> 10 или ubuntu \>=20 (\>=18?)
+а) if debian \> 10 or ubuntu \>=20 (\>=18?)
 
-Прямыми руками - например, если добавить соответствующий репозиторий
-через add-apt-repository, но эта возможность до debian 11 работать не
-будет:
+Direct hands - for example, if you add the corresponding repository via add-apt-repository, but this feature will not work until debian 11: 
 
 ```
 apt-get install software-properties-common
 ``` 
-//теперь доступна команда add-apt-repository
+//the add-apt-repository command is now available 
 
 ```
 sudo add-apt-repository ppa:wireguard/wireguard
 ```
 
-б) если debian \~10 (с оговорками 9).
+б) if debian \~10 (with reservations 9).
 
-Поэтому до debian 11.0 нужно использовать бэкпорты, в оф. репозиториях
-wireguard нет. Эта строка говорит пакет-менеджеру, что нужно
-использовать также репозиторий buster-backports для поиска и установки
-пакетов (а contrib / non-free - разделы в которых apt будет искать
-главный contributed и несвободный софт):
+Therefore, before debian 11.0, you need to use backports, in the official repositories there are no wireguard. This line tells the package manager to also use the buster-backports repository to find and install packages (and contrib / non-free are the sections where apt will look for the main contributed and non-free software): 
 
 ```
 sudo sh -c "echo 'deb http://deb.debian.org/debian buster-backports
@@ -455,8 +417,7 @@ main contrib non-free' >
 /etc/apt/sources.list.d/buster-backports.list"
 ```
 
-Подключение репозитория для debian / ubuntu сделано. Теперь обновим
-пакеты:
+The repository connection for debian / ubuntu is done. Now let's update the packages: 
 
 ```
 sudo apt-get update
@@ -464,23 +425,19 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
-Установим Wireguard:
+Install Wireguard:
 
 ```
 sudo apt install wireguard
 ```
 
-Сделаем доступной wg-quick (понадобится дальше,
-<https://3dnews.ru/1002719/wireguard-vpn-setup>):
+Let's make available wg-quick (will be needed further, <https://3dnews.ru/1002719/wireguard-vpn-setup>):
 
 ```
 sudo apt-get install linux-headers-$(uname -r)
 ```
 
-//если пакет сходу не находит (например, у меня так случилось в случае
-debian 9), то нужно найти и установить ближайший: sudo apt-cache search
-linux-headers
-(<https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package>)
+//if the package is not immediately found (for example, it happened to me in the case of debian 9), then you need to find and install the closest one: sudo apt-cache search linux-headers (<https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package>)
 
 ### 8.2. Настройка - перенаправление сетевых пакетов на стороне сервера
 
