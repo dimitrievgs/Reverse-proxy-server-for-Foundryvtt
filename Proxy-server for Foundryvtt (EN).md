@@ -1,6 +1,6 @@
 # Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
 
-//the translation and editing is in the process
+//the translation and editing is in the process. Eventually I will rewrite all google translation.
 
 Below is one of the options for configuring a server with debian 10 for proxying traffic from a local GM machine connected to a VLAN using Wireguard, on the one hand, to a player's computer connected through a browser to a domain on the Internet via a secure https connection, on the other hand ( and back). Allows to drive parties to several GMs at the same time, using one server (while choosing the minimum tariff plan vps / vds, if the server is rented). 
 
@@ -10,8 +10,8 @@ Below is one of the options for configuring a server with debian 10 for proxying
 The advantages of this approach are that:
 1) In comparison with renting a full-fledged server for hosting Foundryvtt, you can minimize costs, because a weak machine is enough to proxy traffic.
 2) In comparison with placing Foundryvtt on a remote rented server, in this case you will prepare for games from your personal computer, without wasting time for receiving and sending traffic (if you keep your personal server at home, then, of course, delays are minimized).
-4) Compared to hosting Foundryvtt on a personal home server, there is no need to worry about fire safety.
-3) Compared to placing Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system, the logic of communication over the network is located on the vps side (not counting ssh and wireguard connections). You just need to install wireguard, add configuration to it and open a UDP port in the firewall. No additional Foundryvtt configuration is required.
+3) Compared to hosting Foundryvtt on a personal home server, there is no need to worry about fire safety.
+4) Compared to placing Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system, the logic of communication over the network is located on the vps side (not counting ssh and wireguard connection). You just need to install wireguard on the GM's personal computer, add the configuration to it and open the UDP port in the firewall. No additional Foundryvtt configuration is required. Thus, although this guide assumes configuration using ubuntu / debian, if the server is already configured, it requires minimal configuration of GM personal computers to use it. 
 5) Compared to hosting Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, here on a personal computer you do not need to open TCP ports 80 (http), 443 (https).
 6) Compared to connecting players via a virtual private network, here players do not need to deal with this connection, just go to the domain name in the browser.
 7) Allows to use one vps / vds server for several GMs. 
@@ -389,7 +389,7 @@ Is it necessary at all? Skipped for now
 
 <https://www.linux.org.ru/forum/admin/14321745>
 
-### 8.1. Установка
+### 8.1. Installation
 
 Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we will deploy, both will formally be peers, but,
 for the network to "work", at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository: 
@@ -439,14 +439,11 @@ sudo apt-get install linux-headers-$(uname -r)
 
 //if the package is not immediately found (for example, it happened to me in the case of debian 9), then you need to find and install the closest one: sudo apt-cache search linux-headers (<https://stackoverflow.com/questions/22165929/install-linux-headers-on-debian-unable-to-locate-package>)
 
-### 8.2. Настройка - перенаправление сетевых пакетов на стороне сервера
+### 8.2. Configuration - Server Side Network Packet Forwarding 
 
-Теперь приступим к настройке Wireguard.
+Now let's start configuring Wireguard. 
 
-Для того, чтобы пакеты перенаправлялись туда, куда надо, нужно разрешить
-перенаправление сетевых пакетов на уровне ядра. Для этого откроем файл
-/etc/sysctl.conf и добавим в конец такие строки
-(<https://losst.ru/ustanovka-wireguard-v-ubuntu>):
+In order for packets to be redirected to the right place, you need to enable redirection of network packets at the kernel level. To do this, open the file /etc/sysctl.conf and add the following lines to the end (<https://losst.ru/ustanovka-wireguard-v-ubuntu>): 
 
 ```
 sudo vi /etc/sysctl.conf
@@ -468,22 +465,21 @@ net.ipv4.conf.default.send_redirects = 1
 net.ipv4.conf.all.send_redirects = 0
 ```
 
-Затем необходимо выполнить команду sysctl -p, чтобы система перечитала
-конфигурацию:
+Then you need to run the command **sysctl -p** so that the system re-reads the configuration: 
 
 ```
 sudo sysctl -p
 ```
 
-### 8.3. Генерация пар публичный - приватный ключ
+### 8.3. Generation of public - private key pairs 
 
-&#x1F535; Сгенерируем все ключи для конфигураций Wireguard на стороне клиента.
-Генерация ключей сервера:
+&#x1F535; Let's generate all the keys for the Wireguard client-side configurations.
+Generating server keys: 
 
 **wg genkey \| sudo tee server_private.key \| wg pubkey \| sudo tee
 server_public.key**
 
-просмотреть ключи:
+view keys: 
 
 ```
 cat server_private.key
@@ -497,11 +493,9 @@ cat server_public.key
 
 //+tYEi\...
 
-Я просто сохранял себе все ключи по очереди в текстовый редактор, а
-потом вставлял в нужные места в файлах конфигурации, правя конфигурацию
-сервера через ssh.
+I just saved all the keys to myself in turn in a text editor, and then pasted them in the right places in the configuration files, editing the server configuration via ssh. 
 
-Генерация ключей клиента:
+Generating client keys: 
 
 ```
 wg genkey | sudo tee client_private.key | wg pubkey | sudo tee client_public.key
@@ -511,10 +505,7 @@ cat client_private.key
 cat client_public.key
 ```
 
-Пусть нам нужно создать сеть на N клиентов (что не совсем корректно, в
-рамках Wireguard все считаются пирами), я просто взял и сгенерировал
-себе пары публичный и приватный ключи для клиента N раз и сохранил себе
-в текстовый редактор / "блокнот" что-то типа:
+Suppose we need to create a network for N clients (which is not entirely correct, as part of Wireguard all are considered peers), I just took and generated pairs of public and private keys for the client N times and saved to myself in a text editor something like: 
 
 =2
 
@@ -522,20 +513,17 @@ private: UKBSB\...
 
 public: a3L4e\...
 
-### 8.4. Запись настроек в файлы конфигураций
+### 8.4. Writing settings to configuration files
 
-Теперь создадим конфигурационный файл сервера. Выберем порт для UDP
-(Wireguard использует UDP) - **\<custom_wireguard_port\>.**
+Now let's create a server configuration file. Choose a port for UDP (Wireguard uses UDP) - **\<custom_wireguard_port\>.**
 
-Наш конфигурационный файл сервера (назовём его \<wg_0\>) будет находится
-по пути /etc/wireguard/\<wg_0\>.conf и будет выглядеть следующим образом
-(открыл конфигурацию через ssh и внёс туда текст типа):
+Our server configuration file (let's call it \<wg_0 \>) will be located on the /etc/wireguard/\<wg_0\>.conf path and will look like this (opened the configuration via ssh and added a text like this): 
 
 ```
 sudo vi /etc/wireguard/<wg_0>.conf
 ```
 
-Текст конфигурации для сервера:
+Configuration text for the server:
 
 ```
 [Interface]
@@ -569,19 +557,15 @@ PublicKey = <client_public_N+1>
 AllowedIPs = 10.10.0.<N+2>/32
 ```
 
-//Сладко: \<custom_wireguard_port\> также является wg_0 в PostUp и
-PostDown. AllowedIPs отвечает за таблицу роутинга и, используя там 32,
-мы говорим, что на той стороне только один адрес. Address - это
-настройки для сетевого интерфейса, тут должно быть 24, т.к. у всей сети
-24 маска.
+//Comment: \<custom_wireguard_port \> is also wg_0 in PostUp and PostDown. AllowedIPs is responsible for the routing table and using 32 there, we say that there is only one address on that side. Address is the settings for the network interface, there should be 24, because the whole network has mask 24. 
 
-Теперь создадим конфигурационные файлы для клиентов:
+Now let's create configuration files for clients: 
 
 ```
 vi client_<N>.conf
 ```
 
-Текст конфигурации для N-го клиента:
+Configuration text for client N: 
 
 ```
 [Interface]
@@ -601,35 +585,22 @@ AllowedIPs = 10.10.0.0/24
 PersistentKeepalive = 25
 ```
 
-Когда опция PersistentKeepAlive включена, пакет keepalive отправляется
-на конечную точку сервера один раз в некотором интервале секунд.
-Разумный интервал, который работает с широким спектром межсетевых
-экранов, составляет 25 секунд. Установка его равным 0 отключает эту
-функцию, что является значением по умолчанию, поскольку большинству
-пользователей это не нужно, и она делает WireGuard немного более
-разговорчивым.
+When the PersistentKeepAlive option is enabled, a keepalive packet is sent to the server endpoint once every several seconds. A reasonable interval that works with a wide variety of firewalls is 25 seconds. Setting it to 0 disables this feature, which is the default since most users don't need it, and it makes WireGuard a little more talkative. 
 
-После того, как вы внесли все изменения, скопируйте файл на компьютер
-каждого клиента под именем /etc/wireguard/\<wg_N\>.conf (вместо \<wg_N\>
-нужно подставить своё название, его нужно будет использовать ниже при
-запуске командах).
+After you have made all the changes, copy the file to the computer of each client under the name /etc/wireguard/\<wg_N\>.conf (instead of \<wg_N\> you need to substitute your name, you will need to use it below when running commands). 
 
-### 8.5. Запуск интерфейсов Wireguard с нужной конфигурацией
+### 8.5. Launch Wireguard Interfaces with Desired Configuration 
 
-&#x1F534; Запустим интерфейсы на стороне сервера и клиента, команды в данном блоке
-нужно будет запустить и на той, и на другой стороне. Для простоты я
-использую название \<wg_0\>, &#x1F535; для каждого клиента будет соответствующее
-выбранное название \<wg_N\>. Если клиент на Windows 10, то нужно просто
-добавить файл конфигурации в программе Wireguard ("Добавить туннель").
+&#x1F534; Let's start the interfaces on the server and client side, the commands in this block
+you will need to run on both sides. For simplicity, I am using the name \<wg_0\>, &#x1F535; for each client there will be a corresponding chosen name \<wg_N\>. If the client is on Windows 10, then you just need to add the configuration file in the Wireguard program ("Add Tunnel"). 
 
-&#x1F534; Для запуска интерфейса используем такую команду:
+&#x1F534; To launch the interface, use the following command: 
 
 ```
 sudo wg-quick up <wg_0>
 ```
 
-//При этом wg-quick аналогично набору следующих команд (пишет в
-консоли):
+//In this case, using wg-quick is similar to a set of the following commands (writes to the console): 
 
 ```
 ~$ sudo wg-quick up <wg_0>
@@ -643,20 +614,19 @@ sudo wg-quick up <wg_0>
 [#] ip link set mtu 1420 up dev <wg_0>
 ```
 
-Аналогично можно использовать systemd:
+Similarly, after the initial configuration, you can then use systemd: 
 
 ```
 sudo systemctl start wg-quick@<wg_0>
 ```
 
-С помощью systemd можно настроить автозагрузку интерфейса Wireguard с
-нужной конфигурацией:
+With systemd, you can configure the Wireguard interface to autoload with the desired configuration: 
 
 ```
 sudo systemctl enable wg-quick@<wg_0>
 ```
 
-Настройка файрвола:
+Firewall configuration: 
 
 ```
 sudo ufw allow <custom_wireguard_port>/udp
@@ -664,44 +634,34 @@ sudo ufw allow <custom_wireguard_port>/udp
 sudo ufw status
 ```
 
-//перезапуск wireguard с нужной конфигурацией: **sudo systemctl restart
+//restarting wireguard with the desired configuration: **sudo systemctl restart
 wg-quick@\<wg_0\>**
 
-//убрать wireguard из запуска при старте локально на debian-подобной
-системе: **sudo systemctl disable wg-quick@\<wg_0\>**
+//remove wireguard from startup at startup locally on a debian-like system: **sudo systemctl disable wg-quick@\<wg_0\>**
 
-### 8.6. Открытие портов на машине с Foundryvtt
+### 8.6. Opening ports on a Foundryvtt machine 
 
-&#x1F535; Здесь всё сильно зависит от используемой ОС, брандмауэров, файрволов,
-проч (как и вся клиентская часть, отмеченная синим). Wireguard работает
-с udp, поэтому нужно открыть соответствующие порты для получения и
-отправки трафика через UDP.
+&#x1F535; Everything here depends a lot on the OS used, firewalls, firewalls, etc. (like the entire client part, marked in blue). Wireguard works with udp, so you need to open the appropriate ports to receive and send traffic over UDP. 
 
-На windows 10 для встроенного брандмауэра (возможно, не достаточно):
+On windows 10 for built-in firewall (maybe not enough): 
 
-Открыть UDP порт **\<custom_wireguard_port\>** на out и in в такой-то
-программе, в нулевом приближении просто открыть порт без привязки к
-программе.
+Open UDP port **\<custom_wireguard_port\>** to out and in for specific program, in a zero approximation, just open the port without being bound to the program. 
 
-Панель управления -\> Брандмауэр Защитника Windows -\> Дополнительные
-параметры -\> Создать два правила для входящих и исходящих подключений.
+Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for in and out connections. 
 
 ![](media/open_firewall_port_Win_10.png)
 
-В случае антивируса, нужно добавить виртуальную сеть, создаваемую
-Wireguard, в доверенные.
+In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
 
-\-\-\-\-\-\-\-\--Переключение между конфигурациями на debian / ubuntu
+\-\-\-\-\-\-\-\--Switching between configurations on debian / ubuntu 
 
-Чтобы свободно переключаться между конфигурациями (разные доступные
-серверы или разные IP виртуальной локальной сети), вначале
-отключим/уберём из автозагрузки все запущенные конфигурации:
+To freely switch between configurations (different available servers or different IP of vpn), first disable / remove all running configurations from startup: 
 
 ```
 sudo systemctl disable wg-quick@<wg...>
 ```
 
-Затем просто поочередно запускать и останавливать нужные:
+Then just start and stop one at a time: 
 
 ```
 sudo systemctl stop wg-quick@<wg_K>
@@ -709,24 +669,20 @@ sudo systemctl stop wg-quick@<wg_K>
 sudo systemctl start wg-quick@<wg_K+1>
 ```
 
-## 9. Регистрация домена и привязка его к ip vps'а
+## 9. Domain registration and binding it to ip of vps
 
-&#x1F534; Здесь ограничусь примером, после регистрации домена у того же
-провайдера, которому принадлежит vps, в случае beget нужно изменить
-A-запись для домена, в т.ч для подзоны www, по умолчанию у beget стоит
-заглушка, ведущая на IP страницы beget \"Домен не прилинкован к
-директории на сервере!\".
+&#x1F534; Here I will limit myself to an example, after registering a domain with the same provider that owns vps, in the case of Beget, you need to change the A-record for the domain, including for the www subzone, by default Beget has a stub leading to the IP page of beget \"Domain not linked to a directory on the server!\". 
 
 ![](media/configure_domain.png)
 
-## 10. Развёртывание nginx сервера, как прокси, который предоставляет доступ к одному из пиров сети wireguard по порту 30000
+## 10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000 
 
-### 10.1. Установка и настройка доступа через http
+### 10.1. Installing and configuring access via http 
 
-Ссылка:
+Link:
 <https://foundryvtt.com/article/nginx/>
 
-Установить nginx:
+Install nginx:
 
 ```
 sudo apt-get update
@@ -734,11 +690,7 @@ sudo apt-get update
 sudo apt-get install nginx
 ```
 
-В файле **/etc/nginx/sites-available/foundryvtt** прописал нужную
-конфигурацию, в разделе server_name нужно указать зарегистрированный
-домен (выше), либо домен \~3 уровня, который выдан провайдером после
-начала аренды vps (типа "134-X-X-X.cloudvps.regruhosting.ru"). Далее -
-**\<domain_name\>**.
+In the file **/etc/nginx/sites-available/foundryvtt** I registered the required configuration, in the server_name section you need to specify the registered domain (above), or the level \~3 domain, which was issued by the provider after the start of the vps lease (like "134-XXX.cloudvps.regruhosting.ru"). Hereinafter - **\<domain_name\>**. 
 
 ```
 sudo vi /etc/nginx/sites-available/foundryvtt
@@ -783,7 +735,7 @@ server {
 
         # proxy_pass http://localhost:30000;
 
-        # адрес Wireguard машины, на которой развёрнут и запущен Foundry
+        # Wireguard address of the machine on which Foundry is deployed and running 
 
         proxy_pass http://10.10.0.2:30000;
 
@@ -792,11 +744,9 @@ server {
 }
 ```
 
-&#x1F535; //похоже, не обязательно (работает и без этого в данном контексте), на
-стороне клиента с Foundry:
+&#x1F535; //seems not necessary (works without it in this context), on the client side with Foundry: 
 
-В user data папке Foundryvtt в файле **{userData}/Config/options.json**
-изменил:
+In the user data folder of Foundryvtt in the file **{userData}/Config/options.json** changed: 
 
 ```
 {
@@ -834,35 +784,36 @@ server {
 }
 ```
 
-&#x1F534; Дальше подключим новый сайт, создав символьную ссылку на конфигурацию в
-/etc/nginx/sites-enabled/
+&#x1F534; Next, let's connect the new site by creating a symbolic link to the configuration in
+/etc/nginx/sites-enabled/ 
 
 ```
 sudo ln -s /etc/nginx/sites-available/foundryvtt
 /etc/nginx/sites-enabled/
 ```
 
-Проверка файла конфигурации
+Checking the configuration file 
 
 ```
 sudo service nginx configtest
 ```
 
-Запуск nginx
+Starting nginx 
 
 ```
 sudo service nginx start
 ```
 
+<details>
+<summary>Stop, restart and delete</summary>
+
 //sudo service nginx stop
 
 //sudo service nginx restart
 
-//sudo nginx -s reload //Если нужно только перечитать конфигурационные файлы
+//sudo nginx -s reload //If you only need to re-read the configuration files 
 
-*(если удалять, то не так, нужно как-то аккуратнее!) В случае удаления
-конфигурации сервера вида **/etc/nginx/sites-available/\<conf_name\>**
-нужно также удалить все ссылки на неё:*
+*(if you need to delete, then this way is wrong, you need to do it in some other way!) If you delete a server configuration like **/etc/nginx/sites-available/\<conf_name\>**, you must also delete all links to it:* 
 
 ```
 sudo rm /etc/nginx/sites-available/foundryvtt
@@ -872,15 +823,18 @@ sudo rm /etc/nginx/sites-enabled/foundryvtt
 sudo systemctl restart nginx.service
 ```
 
-Также открыл порты у файрвола ufw:
+</details>
 
-Для http:
+
+Also opened the ports on the ufw firewall: 
+
+For http:
 
 ```
 sudo ufw allow 80/tcp
 ```
 
-Для https:
+For https:
 
 ```
 sudo ufw allow 443/tcp
@@ -888,20 +842,13 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-Теперь проверяем, что foundryvtt доступен через сеть интернет по
-протоколу http, если пользователь (ГМ) с запущенной foundry подключился
-к нужной конфигурации wireguard, а другой пользователь (игрок) зашёл по
-адресу \"**\<domain_name\>**\" (при этом порт UDP
-**\<custom_wireguard_port\>** должен быть открыт на машине ГМа, -
-достаточно ли этого для работы?).
+Now we check that foundryvtt is accessible via the Internet via the http protocol, if the user (GM) running foundry connected to the required wireguard configuration, and another user (player) went to the address \"**\<domain_name\>**\" ( in this case, the UDP port **\<custom_wireguard_port\>** must be open on the GM machine - is this enough for work?). 
 
-### 10.2. Установка бота Certbot для установки и автообновления ssl(tls?)-сертификатов от Let's Encrypt
+### 10.2. Installing the Certbot bot for installing and auto-renewing ssl (tls?) - certificates from Let's Encrypt 
 
-Далее нужно сделать доступ через https, для этого используем сертификат
-от Let's Encrypt и его certbot:
-<https://certbot.eff.org/lets-encrypt/debianbuster-nginx>
+Next, you need to make access via https, for this we use the certificate from Let's Encrypt and its certbot: <https://certbot.eff.org/lets-encrypt/debianbuster-nginx>
 
-Установим snapd:
+Install snapd:
 
 ```
 sudo apt update
@@ -909,64 +856,52 @@ sudo apt update
 sudo apt install snapd
 ```
 
-Убедимся, что версия snapd актуальна:
+Make sure the snapd version is up to date: 
 
 ```
 sudo snap install core; sudo snap refresh core
 ```
 
-Удалим certbot-auto или все пакеты Certbot OS, если они были установлены
-менеджерами пакетов типо apt (т.к. для установки и обновления certbot
-рекомендуется использовать snapd):
+Remove certbot-auto or all Certbot OS packages if they were installed by package managers like apt (since it is recommended to use snapd to install and update certbot): 
 
 ```
 sudo apt-get remove certbot
 ```
 
-Установим Certbot:
+Install Certbot:
 
 ```
 sudo snap install \--classic certbot
 ```
 
-Убедимся, что команда certbot может быть запущена:
+Verify that the certbot command can be run: 
 
 ```
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 ```
 
-Установим сертификаты автоматически (попутно он изменит конфигурации тех
-"сайтов", для которых мы выберем установку ssl-сертификатов):
+We will install the certificates automatically (along the way, it will change the configurations of those "sites" for which we will choose to install ssl certificates): 
 
 ```
 sudo certbot \--nginx
 ```
 
-Описание "ручного" варианта установки по ссылке выше.
+Description of the "manual" installation option from the link above. 
 
-Проверим автоматическое обновление сертификатов:
+Let's check the automatic renewal of certificates: 
 
 ```
 sudo certbot renew \--dry-run
 ```
 
-### 10.3. Установка и настройка доступа через https
+### 10.3. Installing and configuring access via https 
 
-После автоматической установки Certbot он должен был изменить
-конфигурацию(и) типа **/etc/nginx/sites-available/foundryvtt**, привязав
-им сертификаты и сделав ряд других изменений, в том числе принудительное
-перенаправление http-запросов на https. Просмотреть совершенные
-изменения можно с помощью команды
+After installing Certbot automatically, it had to change the configuration(s) like **/etc/nginx/sites-available/foundryvtt**, binding the certificates to them and making a number of other changes, including forced redirection of http requests to https. You can view the completed changes using the command 
 
 ```
 sudo vi /etc/nginx/sites-available/foundryvtt
 ```
 
-Если была выбрана ручная установка certbot, и эти изменения не были
-совершены (не проверял, может, и в этом случае правит конфигурации), то
-нужно сделать их вручную согласно
-<https://foundryvtt.com/article/nginx/>.
+If a manual installation of certbot was chosen, and these changes were not made (I did not check, maybe in this case, the configurations are being corrected), then you need to do them manually according to <https://foundryvtt.com/article/nginx/>.
 
-Теперь, если на машине ГМа запущен Foundryvtt, и сделано подключение к
-Wireguard, Foundry должен быть доступен в браузере по адресу
-**\<domain_name\>** через протокол https.
+Now, if Foundryvtt is running on the GM machine and a connection to Wireguard is made, Foundry should be available in the browser at **\<domain_name\>** via the https protocol. 
