@@ -11,7 +11,7 @@ The advantages of this approach are that:
 1) In comparison with renting a full-fledged server for hosting Foundryvtt, you can minimize costs, because a weak machine is enough to proxy traffic.
 2) In comparison with placing Foundryvtt on a remote rented server, in this case you will prepare for games from your personal computer, without wasting time for receiving and sending traffic (if you keep your personal server at home, then, of course, delays are minimized).
 3) Compared to hosting Foundryvtt on a personal home server, there is no need to worry about fire safety.
-4) Compared to placing Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system, the logic of communication over the network is located on the vps side (not counting ssh and wireguard connection). You just need to install wireguard on the GM's personal computer, add the configuration to it and open the UDP port in the firewall. No additional Foundryvtt configuration is required. Thus, although this guide assumes configuration using ubuntu / debian, if the server is already configured, it requires minimal configuration of GM personal computers to use it. 
+4) Compared to placing Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, you do not need to re-configure your personal computer to send data over the network in case of reinstalling the operating system, the logic of communication over the network is located on the vps side (not counting ssh and wireguard connection). You just need to install wireguard on the GM's personal computer, add the configuration to it and open the UDP port in the firewall. No additional Foundryvtt configuration is required. Thus, although this guide assumes configuration using ubuntu / debian, if the server is already configured, it requires minimal configuration of GMs' personal computers to use it. 
 5) Compared to hosting Foundryvtt on a personal computer and sharing access to Foundryvtt using nginx, here on a personal computer you do not need to open TCP ports 80 (http), 443 (https).
 6) Compared to connecting players via a virtual private network, here players do not need to deal with this connection, just go to the domain name in the browser.
 7) Allows to use one vps / vds server for several GMs. 
@@ -88,7 +88,7 @@ usermod -aG sudo <username>
 ```
 
 //It can be verified that the user has been added to the sudo group: \"vi
-/etc/group\" //закрыть Esc и \":q\"
+/etc/group\" //Close - Esc and \":q\"
 
 //In parallel, a folder should have appeared in /home/ - \<username\>
 
@@ -161,7 +161,7 @@ chown -R <username>:<username> /home/<username>/.ssh
 
 **> Ubuntu 20:**
 
-create a file with the key \<custom_server_key_file\> и and send it to the server so that its contents are written to the file \.../authorized_keys:
+create a file with the key \<custom_server_key_file\> and send it to the server so that its contents are written to the file \.../authorized_keys:
 
 ```
 sudo mkdir -p /root/.ssh/
@@ -394,7 +394,7 @@ Is it necessary at all? Skipped for now
 Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we will deploy, both will formally be peers, but,
 for the network to "work", at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository: 
 
-а) if debian \> 10 or ubuntu \>=20 (\>=18?)
+a) if debian \> 10 or ubuntu \>=20 (\>=18?)
 
 Direct hands - for example, if you add the corresponding repository via add-apt-repository, but this feature will not work until debian 11: 
 
@@ -407,7 +407,7 @@ apt-get install software-properties-common
 sudo add-apt-repository ppa:wireguard/wireguard
 ```
 
-б) if debian \~10 (with reservations 9).
+b) if debian \~10 (with reservations 9).
 
 Therefore, before debian 11.0, you need to use backports, in the official repositories there are no wireguard. This line tells the package manager to also use the buster-backports repository to find and install packages (and contrib / non-free are the sections where apt will look for the main contributed and non-free software): 
 
@@ -673,7 +673,7 @@ sudo systemctl start wg-quick@<wg_K+1>
 
 &#x1F534; Here I will limit myself to an example, after registering a domain with the same provider that owns vps, in the case of Beget, you need to change the A-record for the domain, including for the www subzone, by default Beget has a stub leading to the IP page of beget \"Domain not linked to a directory on the server!\". 
 
-![](media/configure_domain.png)
+![](media/configure_domain_en.png)
 
 ## 10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000 
 
