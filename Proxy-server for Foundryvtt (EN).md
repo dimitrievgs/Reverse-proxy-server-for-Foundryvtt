@@ -673,7 +673,7 @@ sudo systemctl start wg-quick@<wg_K+1>
 
 &#x1F534; Here I will limit myself to an example, after registering a domain with the same provider that owns vps, in the case of Beget, you need to change the A-record for the domain, including for the www subzone, by default Beget has a stub leading to the IP page of beget \"Domain not linked to a directory on the server!\". 
 
-![](media/configure_domain_en.png)
+![](media/link_domain_en.png)
 
 ## 10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000 
 
