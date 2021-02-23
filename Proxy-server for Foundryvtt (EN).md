@@ -647,9 +647,9 @@ On windows 10 for built-in firewall (maybe not enough):
 
 Open UDP port **\<custom_wireguard_port\>** to out and in for specific program, in a zero approximation, just open the port without being bound to the program. 
 
-Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for in and out connections. 
+Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for inbound and outbound connections. 
 
-![](media/open_firewall_port_Win_10.png)
+![](media/open_firewall_port_Win_10_en.png)
 
 In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
 
