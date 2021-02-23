@@ -647,9 +647,9 @@ On windows 10 for built-in firewall (maybe not enough):
 
 Open UDP port **\<custom_wireguard_port\>** to out and in for specific program, in a zero approximation, just open the port without being bound to the program. 
 
-Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for in and out connections. 
+Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for inbound and outbound connections. 
 
-![](media/open_firewall_port_Win_10.png)
+![](media/open_firewall_port_Win_10_en.png)
 
 In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
 
@@ -673,7 +673,7 @@ sudo systemctl start wg-quick@<wg_K+1>
 
 &#x1F534; Here I will limit myself to an example, after registering a domain with the same provider that owns vps, in the case of Beget, you need to change the A-record for the domain, including for the www subzone, by default Beget has a stub leading to the IP page of beget \"Domain not linked to a directory on the server!\". 
 
-![](media/configure_domain_en.png)
+![](media/link_domain_en.png)
 
 ## 10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000 
 
