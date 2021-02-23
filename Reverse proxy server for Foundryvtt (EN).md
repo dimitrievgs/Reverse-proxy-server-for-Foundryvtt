@@ -1,4 +1,4 @@
-# Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
+# Reverse proxy server for Foundryvtt (GM's PC - Wireguard - nginx) <!-- omit in toc --> 
 
 //the translation and editing is in the process. Eventually I will rewrite all google translation.
 
@@ -29,6 +29,29 @@ These commands are given for a server on debian> = 10, most likely, they are als
 Briefly about what will be done below: 
 
 ![](media/Proxy-server_Foundryvtt_scheme_en.png)
+
+## Table of Contents<!-- omit in toc --> 
+- [1. vps/vds-provider](#1-vpsvds-provider)
+- [2. Server preparation](#2-server-preparation)
+- [3. Non-root user, on the server](#3-non-root-user-on-the-server)
+- [4. SSH - keys instead of passwords](#4-ssh---keys-instead-of-passwords)
+- [5. Firewall](#5-firewall)
+- [6. Fail2ban](#6-fail2ban)
+- [7. Changing the default ports](#7-changing-the-default-ports)
+- [8. Wireguard](#8-wireguard)
+  - [8.1. Installation](#81-installation)
+  - [8.2. Configuration - Server Side Network Packet Forwarding](#82-configuration---server-side-network-packet-forwarding)
+  - [8.3. Generation of public - private key pairs](#83-generation-of-public---private-key-pairs)
+  - [8.4. Writing settings to configuration files](#84-writing-settings-to-configuration-files)
+  - [8.5. Launch Wireguard Interfaces with Desired Configuration](#85-launch-wireguard-interfaces-with-desired-configuration)
+  - [8.6. Opening ports on a Foundryvtt machine](#86-opening-ports-on-a-foundryvtt-machine)
+    - [8.7.1. Debian / Ubuntu](#871-debian--ubuntu)
+    - [8.7.2. Windows 10](#872-windows-10)
+- [9. Domain registration and binding it to ip of vps](#9-domain-registration-and-binding-it-to-ip-of-vps)
+- [10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000](#10-deploying-an-nginx-server-as-a-proxy-that-provides-access-to-one-of-the-peers-of-the-wireguard-network-on-port-30000)
+  - [10.1. Installing and configuring access via http](#101-installing-and-configuring-access-via-http)
+  - [10.2. Installing the Certbot bot for installing and auto-renewing ssl (tls?) - certificates from Let's Encrypt](#102-installing-the-certbot-bot-for-installing-and-auto-renewing-ssl-tls---certificates-from-lets-encrypt)
+  - [10.3. Installing and configuring access via https](#103-installing-and-configuring-access-via-https)
 
 ## 1. vps/vds-provider
 
@@ -639,22 +662,8 @@ wg-quick@\<wg_0\>**
 
 //remove wireguard from startup at startup locally on a debian-like system: **sudo systemctl disable wg-quick@\<wg_0\>**
 
-### 8.6. Opening ports on a Foundryvtt machine 
-
-&#x1F535; Everything here depends a lot on the OS used, firewalls, firewalls, etc. (like the entire client part, marked in blue). Wireguard works with udp, so you need to open the appropriate ports to receive and send traffic over UDP. 
-
-On windows 10 for built-in firewall (maybe not enough): 
-
-Open UDP port **\<custom_wireguard_port\>** to out and in for specific program, in a zero approximation, just open the port without being bound to the program. 
-
-Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for inbound and outbound connections. 
-
-![](media/open_firewall_port_Win_10_en.png)
-
-In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
-
-\-\-\-\-\-\-\-\--Switching between configurations on debian / ubuntu 
-
+<details>
+<summary>Switching between configurations on debian / ubuntu</summary>
 To freely switch between configurations (different available servers or different IP of vpn), first disable / remove all running configurations from startup: 
 
 ```
@@ -668,6 +677,28 @@ sudo systemctl stop wg-quick@<wg_K>
 
 sudo systemctl start wg-quick@<wg_K+1>
 ```
+</details>
+
+### 8.6. Opening ports on a Foundryvtt machine 
+
+&#x1F535; Everything here depends a lot on the OS used, firewalls, firewalls, etc. (like the entire client part, marked in blue). Wireguard works with udp, so you need to open the appropriate ports to receive and send traffic over UDP. 
+
+#### 8.7.1. Debian / Ubuntu
+
+For the ufw firewall, proceed by analogy with section: 
+* [8.5. Launch Wireguard Interfaces with Desired Configuration](#85-launch-wireguard-interfaces-with-desired-configuration).
+
+#### 8.7.2. Windows 10
+
+On windows 10 for built-in firewall (maybe not enough): 
+
+Open UDP port **\<custom_wireguard_port\>** to out and in for specific program, in a zero approximation, just open the port without being bound to the program. 
+
+Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two rules for inbound and outbound connections. 
+
+![](media/firewall_open_port_in_Win_10_en.png)
+
+In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
 
 ## 9. Domain registration and binding it to ip of vps
 
@@ -698,49 +729,27 @@ sudo vi /etc/nginx/sites-available/foundryvtt
 
 ```
 # Define Server
-
 server {
-
     # Enter your fully qualified domain name or leave blank
-
     server_name <domain_name> www.<domain_name>;
-
     # Listen on port 80 without SSL certificates
-
     listen 80;
-
     # Sets the Max Upload size to 300 MB
-
     client_max_body_size 300M;
-
     # Proxy Requests to Foundry VTT
-
     location / {
-
         # Set proxy headers
-
         proxy_set_header Host \$host;
-
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
         proxy_set_header X-Forwarded-Proto $scheme;
-
         # These are important to support WebSockets
-
         proxy_set_header Upgrade $http_upgrade;
-
         proxy_set_header Connection "Upgrade";
-
         # Make sure to set your Foundry VTT port number
-
         # proxy_pass http://localhost:30000;
-
         # Wireguard address of the machine on which Foundry is deployed and running 
-
         proxy_pass http://10.10.0.2:30000;
-
     }
-
 }
 ```
 
@@ -750,37 +759,21 @@ In the user data folder of Foundryvtt in the file **{userData}/Config/options.js
 
 ```
 {
-
     "port": 30000,
-
     "upnp": true,
-
     "fullscreen": false,
-
     "hostname": "<domain_name>",
-
     "routePrefix": null,
-
     "sslCert": null,
-
     "sslKey": null,
-
     "awsConfig": null,
-
     "dataPath": "/home/hm/.local/share/FoundryVTT",
-
     "proxySSL": false,
-
     "proxyPort": 80,
-
     "minifyStaticFiles": false,
-
     "updateChannel": "release",
-
     "language": "en.core",
-
     "world": null
-
 }
 ```
 
@@ -871,7 +864,7 @@ sudo apt-get remove certbot
 Install Certbot:
 
 ```
-sudo snap install \--classic certbot
+sudo snap install --classic certbot
 ```
 
 Verify that the certbot command can be run: 
@@ -883,7 +876,7 @@ sudo ln -s /snap/bin/certbot /usr/bin/certbot
 We will install the certificates automatically (along the way, it will change the configurations of those "sites" for which we will choose to install ssl certificates): 
 
 ```
-sudo certbot \--nginx
+sudo certbot --nginx
 ```
 
 Description of the "manual" installation option from the link above. 
@@ -891,7 +884,7 @@ Description of the "manual" installation option from the link above.
 Let's check the automatic renewal of certificates: 
 
 ```
-sudo certbot renew \--dry-run
+sudo certbot renew --dry-run
 ```
 
 ### 10.3. Installing and configuring access via https 
