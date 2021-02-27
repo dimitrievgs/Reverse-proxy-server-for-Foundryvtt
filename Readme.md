@@ -1,4 +1,4 @@
-# Proxy server for Foundryvtt  
+# Reverse proxy server for Foundryvtt  
 
 This repository provides instructions for configuring server as proxy server for Foundryvtt using ssh, wireguard, nginx, certbot, ufw, fail2ban.
 Instructions:
