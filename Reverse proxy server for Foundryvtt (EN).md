@@ -1,4 +1,4 @@
-# Proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
+# Reverse proxy server for Foundryvtt (GM's PC - Wireguard - nginx) 
 
 //the translation and editing is in the process. Eventually I will rewrite all google translation.
 
