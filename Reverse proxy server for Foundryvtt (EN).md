@@ -2,7 +2,7 @@
 
 //the translation and editing is in the process. Eventually I will rewrite all google translation.
 
-Below is one of the options for configuring a server with debian 10 for proxying traffic from a local GM machine connected to a VLAN using Wireguard, on the one hand, to a player's computer connected through a browser to a domain on the Internet via a secure https connection, on the other hand ( and back). Allows to drive parties to several GMs at the same time, using one server (while choosing the minimum tariff plan vps / vds, if the server is rented). 
+Below is one of the options for configuring a server with debian 10 for proxying traffic from a local GM machine connected to a vpn using Wireguard, on the one hand, to a player's computer connected through a browser to a domain on the Internet via a secure https connection, on the other hand ( and back). Allows to drive parties to several GMs at the same time, using one server (while choosing the minimum tariff plan vps / vds, if the server is rented). 
 
 <details>
 <summary>Advantages and disadvantages of this approach (may be subjective)</summary>
