@@ -39,12 +39,14 @@ Briefly about what will be done below:
 - [8. Wireguard](#8-wireguard)
   - [8.1. Installation](#81-installation)
   - [8.2. Configuration - Server Side Network Packet Forwarding](#82-configuration---server-side-network-packet-forwarding)
-  - [8.3. Generation of public - private key pairs](#83-generation-of-public---private-key-pairs)
-  - [8.4. Writing settings to configuration files](#84-writing-settings-to-configuration-files)
-  - [8.5. Launch Wireguard Interfaces with Desired Configuration](#85-launch-wireguard-interfaces-with-desired-configuration)
-  - [8.6. Opening ports on a Foundryvtt machine](#86-opening-ports-on-a-foundryvtt-machine)
-    - [8.7.1. Debian / Ubuntu](#871-debian--ubuntu)
-    - [8.7.2. Windows 10](#872-windows-10)
+  - [8.3. Writing settings to configuration files](#83-writing-settings-to-configuration-files)
+    - [8.3.1. Make configurations' texts manually](#831-make-configurations-texts-manually)
+    - [8.3.2. Using a script to generate configurations' files](#832-using-a-script-to-generate-configurations-files)
+  - [8.4. Launch Wireguard Interfaces with Desired Configuration](#84-launch-wireguard-interfaces-with-desired-configuration)
+  - [8.5. Opening UDP-port](#85-opening-udp-port)
+    - [8.5.1. Debian / Ubuntu](#851-debian--ubuntu)
+    - [8.5.2. Windows 10](#852-windows-10)
+  - [8.6. Connection test](#86-connection-test)
 - [9. Domain registration and binding it to ip of vps](#9-domain-registration-and-binding-it-to-ip-of-vps)
 - [10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000](#10-deploying-an-nginx-server-as-a-proxy-that-provides-access-to-one-of-the-peers-of-the-wireguard-network-on-port-30000)
   - [10.1. Installing and configuring access via http](#101-installing-and-configuring-access-via-http)
@@ -270,6 +272,8 @@ sudo ssh <username>@<server_ip_address> -i
 /root/.ssh/<custom_server_key_file>
 ```
 
+This allows you to perform further actions with the server by connecting via ssh by the user \<username\> using the key. 
+
 ## 5. Firewall
 
 &#x1F534; The firewall ensures that the traffic can go to the server only via the specified ports. This protects against exploitation of ports that has been accidentally opened with other services, so it greatly reduces the attack surface. 
@@ -306,7 +310,7 @@ In case you need to restart the firewall:
 sudo systemctl restart ufw
 ```
 
-Probably, now you can see how actively the outside world is trying to communicate with the server, and messages like "\[UFW BLOCK\]".
+Probably now in the VNC client's panel you can see how actively the outside world is trying to communicate with the server, and messages like "\[UFW BLOCK\]".
 
 If you need a more detailed information about configuring of ufw, this article can help:
 <https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html>.
@@ -394,8 +398,7 @@ sudo ufw status
 &#x1F535; :information_source: Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (youa are asked to enter the password <ssh_key_pass>):
 
 ```
-sudo ssh <username>@<server_ip_address> -i
-/root/.ssh/<custom_server_key_file> -p <custom_ssh_port>
+sudo ssh <username>@<server_ip_address> -i /root/.ssh/<custom_server_key_file> -p <custom_ssh_port>
 ```
 
 \-\-\-\-\-\--Automatic security updates 
@@ -405,17 +408,15 @@ Is it necessary at all? Skipped for now
 
 ## 8. Wireguard
 
-<https://www.wireguard.com/quickstart/>
-
-<https://habr.com/ru/post/432686/>
-
+<https://www.wireguard.com/quickstart/><br/>
+<https://habr.com/ru/post/432686/><br/>
 <https://www.linux.org.ru/forum/admin/14321745>
 
 ### 8.1. Installation
 
-Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we deploy, formally both server and clients are peers, but in order for the network to be working, at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository:  
+&#x1F534;&#x1F535; Install Wireguard on the server side and on the client side. Within the network that we deploy, formally both server and clients are peers, but in order for the network to be working, at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository:  
 
-a) if debian \> 10 or ubuntu \>=20 (\>=18?)
+a) if debian \> 10
 
 Adding corresponding repository (add-apt-repository...) have to let installing wireguard, but let's note that this feature does not work until debian 11: 
 
@@ -428,14 +429,12 @@ apt-get install software-properties-common
 sudo add-apt-repository ppa:wireguard/wireguard
 ```
 
-b) if debian \~10 (with reservations 9).
+b) if debian \~10 (with some nuances 9).
 
 Therefore, for debian with version lower than 11.0, you need to use backports, in the official repositories there is no wireguard. This command tells the package manager to also use the buster-backports repository to find and install packages (and contrib / non-free are the sections where apt will look for the main contributed and non-free software): 
 
 ```
-sudo sh -c "echo 'deb http://deb.debian.org/debian buster-backports
-main contrib non-free' >
-/etc/apt/sources.list.d/buster-backports.list"
+sudo sh -c "echo 'deb http://deb.debian.org/debian buster-backports main contrib non-free' > /etc/apt/sources.list.d/buster-backports.list"
 ```
 
 The repository connection for debian / ubuntu is done. Now let's update the packages: 
@@ -445,6 +444,8 @@ sudo apt-get update
 
 sudo apt-get upgrade
 ```
+
+As for ubuntu \>=20 (\>=18?), you already have wireguard in the connected repositories.
 
 Install Wireguard:
 
@@ -462,7 +463,7 @@ sudo apt-get install linux-headers-$(uname -r)
 
 ### 8.2. Configuration - Server Side Network Packet Forwarding 
 
-Now let's start configuring Wireguard. 
+&#x1F534; Now let's start configuring Wireguard. 
 
 In order for packets to be redirected to the right place, you need to enable redirection of network packets at the kernel level. To do this, open the file /etc/sysctl.conf and add the following lines to the end (<https://losst.ru/ustanovka-wireguard-v-ubuntu>): 
 
@@ -492,13 +493,23 @@ Then you need to run the command **sysctl -p** so that the system re-reads the c
 sudo sysctl -p
 ```
 
-### 8.3. Generation of public - private key pairs 
+### 8.3. Writing settings to configuration files
 
-&#x1F535; Let's generate all the keys for the Wireguard client-side configurations.
+Now let's create a server configuration file. Choose a port for UDP (Wireguard uses UDP) - **\<custom_wireguard_port\>.**
+
+Server's configuration file (let's call it \<wg_0\>) will be located at the path /etc/wireguard/\<wg_0\>.conf. Client's configuration file will be located at /etc/wireguard/\<wg_N\>.conf (instead of \<wg_N\> you have to use your own name). You need to enter the configuration name in the configuration text in the iptables section and when calling wg-quick.
+
+#### 8.3.1. Make configurations' texts manually
+
+If you prefer to use a script to generate the configuration files, skip to the next step: [8.3.2. Using a script to generate configurations' files](#832-using-a-script-to-generate-configurations-files).
+
+&#x1F535; Let's generate all the public-private key pairs for the Wireguard client-side configurations.
+
 Generating server keys: 
 
-**wg genkey \| sudo tee server_private.key \| wg pubkey \| sudo tee
-server_public.key**
+```
+wg genkey | sudo tee server_private.key | wg pubkey | sudo tee server_public.key
+```
 
 view keys: 
 
@@ -534,11 +545,7 @@ private: UKBSB\...
 
 public: a3L4e\...
 
-### 8.4. Writing settings to configuration files
-
-Now let's create a server configuration file. Choose a port for UDP (Wireguard uses UDP) - **\<custom_wireguard_port\>.**
-
-Our server configuration file (let's call it \<wg_0 \>) will be located on the /etc/wireguard/\<wg_0\>.conf path and will look like this (opened the configuration via ssh and added a text like this): 
+Open the configuration file and add the text below: 
 
 ```
 sudo vi /etc/wireguard/<wg_0>.conf
@@ -610,7 +617,36 @@ When the PersistentKeepAlive option is enabled, a keepalive packet is sent to th
 
 After you have made all the changes, copy the file to the computer of each client under the name /etc/wireguard/\<wg_N\>.conf (instead of \<wg_N\> you need to substitute your name, you will need to use it below when running commands). 
 
-### 8.5. Launch Wireguard Interfaces with Desired Configuration 
+#### 8.3.2. Using a script to generate configurations' files
+
+An alternative option would be to run the script on the client's side. Let's create a script file in the folder \<script_folder\>: 
+
+```
+sudo mkdir -p <script_folder>
+sudo touch <script_folder>/gen_key
+```
+
+Make the file executable:
+
+```
+sudo chmod +x <script_folder>/gen_key
+```
+
+Open the file and copy the text from the [script file in the repository](gen_keys.sh).
+```
+sudo vi <script_folder>/gen_key
+```
+
+Run it:
+```
+#sudo <script_folder>/gen_key <script_folder> <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
+```
+
+All keys will be stored in a file \<script_folder\>/keys. 
+
+You need to copy the contents of \<script_folder\>/\<wg_0\>.conf to the server in the file /etc/wireguard/\<wg_0\>.conf. 
+
+### 8.4. Launch Wireguard Interfaces with Desired Configuration 
 
 &#x1F534; Let's start the interfaces on the server and client side, the commands in this block
 you will need to run on both sides. For simplicity, I am using the name \<wg_0\>, &#x1F535; for each client there will be a corresponding chosen name \<wg_N\>. If the client is on Windows 10, then you just need to add the configuration file in the Wireguard program ("Add Tunnel"). 
@@ -647,14 +683,6 @@ With systemd, you can configure the Wireguard interface to autoload with the des
 sudo systemctl enable wg-quick@<wg_0>
 ```
 
-Firewall configuration: 
-
-```
-sudo ufw allow <custom_wireguard_port>/udp
-
-sudo ufw status
-```
-
 //restarting wireguard with the desired configuration: **sudo systemctl restart
 wg-quick@\<wg_0\>**
 
@@ -677,16 +705,21 @@ sudo systemctl start wg-quick@<wg_K+1>
 ```
 </details>
 
-### 8.6. Opening ports on a Foundryvtt machine 
+### 8.5. Opening UDP-port
 
 &#x1F535; Everything here depends a lot on the OS used, firewalls, firewalls, etc. (like the entire client part, marked in blue). Wireguard works with udp, so you need to open the appropriate ports to receive and send traffic over UDP. 
 
-#### 8.7.1. Debian / Ubuntu
+#### 8.5.1. Debian / Ubuntu
 
-For the ufw firewall, proceed by analogy with section: 
-* [8.5. Launch Wireguard Interfaces with Desired Configuration](#85-launch-wireguard-interfaces-with-desired-configuration).
+For the ufw firewall, open UDP-port:
 
-#### 8.7.2. Windows 10
+```
+sudo ufw allow <custom_wireguard_port>/udp
+
+sudo ufw status
+```
+
+#### 8.5.2. Windows 10
 
 On windows 10 for built-in firewall (maybe not enough): 
 
@@ -697,6 +730,21 @@ Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two
 ![](media/firewall_open_port_in_Win_10_en.png)
 
 In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
+
+### 8.6. Connection test
+
+In order to test connection between peers in wireguard network you can use ping utility.
+
+To test connection from clients to server:
+```
+ping 10.10.0.1
+```
+
+To test connection from server to client:
+```
+ping 10.10.0.N
+```
+where N > 1.
 
 ## 9. Domain registration and binding it to ip of vps
 
@@ -775,12 +823,10 @@ In the user data folder of Foundryvtt in the file **{userData}/Config/options.js
 }
 ```
 
-&#x1F534; Next, let's connect the new site by creating a symbolic link to the configuration in
-/etc/nginx/sites-enabled/ 
+&#x1F534; Next, let's connect the new site by creating a symbolic link to the configuration in /etc/nginx/sites-enabled/ 
 
 ```
-sudo ln -s /etc/nginx/sites-available/foundryvtt
-/etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/foundryvtt /etc/nginx/sites-enabled/
 ```
 
 Checking the configuration file 
