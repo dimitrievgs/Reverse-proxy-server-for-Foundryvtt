@@ -1,7 +1,5 @@
 # Reverse proxy server for Foundryvtt (GM's PC - Wireguard - nginx) <!-- omit in toc --> 
 
-//the translation and editing is in the process. Eventually I will rewrite all google translation.
-
 Below is one of the options for configuring a server with debian 10 for proxying traffic from a local GM machine connected to a VLAN using Wireguard, on the one hand, to a player's computer connected through a browser to a domain on the Internet via a secure https connection, on the other hand ( and back). Allows to drive parties to several GMs at the same time, using one server (while choosing the minimum tariff plan vps / vds, if the server is rented). 
 
 <details>
@@ -55,8 +53,8 @@ Briefly about what will be done below:
 
 ## 1. vps/vds-provider
 
-The provider will provide a password for the user **root** -
-**\<root_password\>** (let's say by mail).
+The provider sends a password for the user **root** -
+**\<root_password\>** (for example, via email).
 
 User: root
 
@@ -68,15 +66,17 @@ Article 1:
 Article 2:
 <https://timeweb.com/ru/help/pages/viewpage.action?pageId=9241442>
 
-&#x1F534; If you need to immediately change the password for root:
+&#x1F534; If you want to immediately change the password for root:
 
 ```
 passwd root
 ```
 
+> :warning: Hereinafter, it is assumed that we use some VNC-client to control the vps server (parameters for VNC-connection should be in the vps's control panel of provider or in sent email). Then we will shift to using ssh after (at least) ssh-client will be installed on the server side and non-root user will be created.
+
 ## 2. Server preparation
 
-We update the list of packages from the repositories, update all installed packages to the current version. 
+We update the list of packages from the repositories and update all installed packages to the current version. 
 
 ```
 apt-get update
@@ -86,17 +86,16 @@ apt-get upgrade
 
 ## 3. Non-root user, on the server 
 
-Since the root user has absolute privileges in the system, in order to prohibit him from remote administration, we will create a non-root user, and for root, disable remote administration via ssh.
-Coming up with a non-root user **\<username\>** and a password for him
-**\<user_pass\>**: 
+Since the root user has absolute privileges in the system, in order to prohibit remote administration using it, we create a non-root user and disable remote administration for root via ssh.
+Let's create the user **\<username\>** with a password **\<user_pass\>**: 
 
 ```
 adduser <username>
 ```
 
-At the same time, it will immediately ask you to enter **\<user_pass\>** //later can be changed with **passwd \<username\>**
+Here you are asked to enter **\<user_pass\>** //later it can be changed with **passwd \<username\>**
 
-Next, he will ask you to specify some information for the new user, you can just press Enter several times and then Y. 
+Next, you are asked to specify some information for the new user, you can just press Enter several times and then Y. 
 
 If sudo is not already installed, install it: 
 
@@ -113,7 +112,7 @@ usermod -aG sudo <username>
 //It can be verified that the user has been added to the sudo group: \"vi
 /etc/group\" //Close - Esc and \":q\"
 
-//In parallel, a folder should have appeared in /home/ - \<username\>
+//Also a folder should have been created: /home/\<username\>
 
 ## 4. SSH - keys instead of passwords 
 
@@ -126,7 +125,7 @@ usermod -aG sudo <username>
 Brute force or password leakage is a standard attack vector, so it is better to disable SSH (Secure Shell) password authentication and use key authentication instead. We use the openssh client. Alternatively there are also, for example, lsh and Dropbear. 
 
 &#x1F535;
-Installing OpenSSH Client on Ubuntu:
+Install OpenSSH Client on the client side:
 
 ```
 sudo apt install openssh-client
@@ -168,7 +167,7 @@ Checking for file existence:
 ls -lh /home/<username>/.ssh/authorized_keys
 ```
 
-set the correct permissions for the folder and file:
+Set the correct permissions for the folder and file:
 
 ```
 chmod 700 /home/<username>/.ssh && chmod 600 /home/<username>/.ssh/authorized_keys
@@ -196,7 +195,7 @@ Generate ssh key for server, password for ssh key: \<ssh_key_pass\>
 sudo ssh-keygen
 ```
 
-In the process, it will ask you to enter the path to the created private and public keys:
+In the process, you are asked to enter the path to the created private and public keys:
 
 > \>sudo ssh-keygen
 >
@@ -217,16 +216,16 @@ In the process, it will ask you to enter the path to the created private and pub
 >
 > \<\...\>
 
-By default, ssh-keygen likes to drop files into a folder /home/ (?), so the full path needs to be hammered in and all subdirectories must exist.
+By default, ssh-keygen likes to drop files into a folder /home/ (?), so the full path needs to be specified, and all subdirectories must exist.
 
-Now we will send the public key to the server so that it writes the contents to a file /home/\<username\>/.ssh/authorized_keys:
+Now we send the public key to the server so it is written to a file /home/\<username\>/.ssh/authorized_keys:
 
 ```
 sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
 <username>@<server_ip_address>
 ```
 
-&#x1F534; You can check that the key has "reached", for this on the server side, enter the command 
+&#x1F534; You can verify that the key has been sent and written by entering the command on the server side
 
 ```
 vi /home/<username>/.ssh/authorized_keys
@@ -238,13 +237,13 @@ vi /home/<username>/.ssh/authorized_keys
 ssh <username>@<server_ip_address>
 ```
 
-&#x1F534; Therefore, further we disable remote access using ssh from under root and the use of passwords, for this we correct: 
+&#x1F534; So next we disable remote access using ssh with root and the use of passwords, so we make changes in: 
 
 ```
 vi /etc/ssh/sshd_config
 ```
 
-In total, uncomment where necessary and install (in VIM, switch to editing mode by pressing the Insert button, insert text from the clipboard Shift+Insert, delete all text from this position Esc + :.,\$d + Enter, exit without writing :q!): 
+In total, uncomment where necessary and set (in VIM, switch to editing mode by pressing the Insert button, insert text from the clipboard Shift+Insert, delete all text from this position Esc + :.,\$d + Enter, exit without writing :q!): 
 
 ```
 PermitRootLogin no
@@ -264,7 +263,7 @@ Restart the ssh daemon for the changes to take effect:
 sudo systemctl restart ssh
 ```
 
-&#x1F535; At the moment, from the client's side, connecting to the server is possible with a command (when entering, it will ask for a password **\<ssh_key_pass\>**):
+&#x1F535; At the moment, from the client's side, connection to the server is possible with a command (when entering, you are asked for a password **\<ssh_key_pass\>**):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
@@ -273,15 +272,15 @@ sudo ssh <username>@<server_ip_address> -i
 
 ## 5. Firewall
 
-&#x1F534; The firewall ensures that only the traffic on the ports that you directly allow will go to the server. This protects against exploitation of ports that accidentally join with other services, that is, greatly reduces the attack surface. 
+&#x1F534; The firewall ensures that the traffic can go to the server only via the specified ports. This protects against exploitation of ports that has been accidentally opened with other services, so it greatly reduces the attack surface. 
 
-We will use ufw as a firewall. If it is not already installed, install it: 
+We will use firewall ufw. If it is not already installed, install it: 
 
 ```
 sudo apt install ufw
 ```
 
-Let's add SSH to the list of firewall exceptions (otherwise, after starting the firewall, we will not be able to connect to the server): 
+Let's add SSH to the list of firewall exceptions (otherwise, after starting the firewall, we are not be able to connect to the server): 
 
 ```
 sudo ufw allow ssh
@@ -299,7 +298,7 @@ Now you can check the status of the firewall by entering:
 sudo ufw status
 ```
 
-ufw will display that TCP connection on port 22 is allowed (for ssh the standard port is 22): 22/tcp - ALLOW - Anywhere
+Here ufw displays that TCP connection on port 22 is allowed (for ssh the standard port is 22): 22/tcp - ALLOW - Anywhere
 
 In case you need to restart the firewall: 
 
@@ -307,14 +306,14 @@ In case you need to restart the firewall:
 sudo systemctl restart ufw
 ```
 
-Probably, now it will become visible how actively the outside world is trying to communicate with the server, and messages like "\[UFW BLOCK\]".
+Probably, now you can see how actively the outside world is trying to communicate with the server, and messages like "\[UFW BLOCK\]".
 
-If there is a need for a more detailed setup of ufw, this article may come in handy:
+If you need a more detailed information about configuring of ufw, this article can help:
 <https://1linux.ru/old/fajrvoll-primery-s-iptables-ufw.html>.
 
 ## 6. Fail2ban
 
-The Fail2Ban service analyzes the logs on the server and counts the number of access attempts from each IP address. The settings specify the rules for how many access attempts are allowed for a certain interval - after which this IP address is blocked for a specified period of time. For example, we allow 5 unsuccessful SSH authentication attempts within 2 hours, after which we block this IP address for 12 hours. 
+The Fail2Ban service analyzes the logs on the server and counts the number of access attempts from each IP address. Its settings specify the rules for how many access attempts are allowed for a certain interval - after which this IP address is blocked for a specified period of time. For example, we allow 5 unsuccessful SSH authentication attempts within 2 hours, after which we block this IP address for 12 hours. 
 
 Install fail2ban:
 
@@ -322,7 +321,7 @@ Install fail2ban:
 sudo apt install fail2ban
 ```
 
-Let's start and install the startup at system startup: 
+Let's start the service and configure it to start at system startup: 
 
 ```
 sudo systemctl start fail2ban
@@ -330,9 +329,9 @@ sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
 ```
 
-The program has two configuration files: /etc/fail2ban/fail2ban.conf and /etc/fail2ban/jail.conf. The ban limits are specified in the second file. 
+The program has two configuration files: /etc/fail2ban/fail2ban.conf and /etc/fail2ban/jail.conf. The ban conditions are specified in the second file. 
 
-Jail for SSH is enabled by default with default settings (5 attempts, interval 10 minutes, ban for 10 minutes). 
+Jail for SSH is enabled by default with these default settings (5 attempts, interval 10 minutes, ban for 10 minutes). 
 
 ```
 [DEFAULT]
@@ -350,7 +349,7 @@ In addition to SSH, Fail2Ban can protect other services on the nginx or Apache w
 
 ## 7. Changing the default ports 
 
-For ssh, the default port number is 22. To reduce the attack surface (questions to <https://habr.com/ru/company/vdsina/blog/521388/>), let's change the port number. 
+For ssh, the default port is 22. To reduce the attack surface (-> <https://habr.com/ru/company/vdsina/blog/521388/>), let's change the port number. 
 
 The port number can be configured by changing the Port 22 directive in the configuration file 
 
@@ -376,7 +375,7 @@ Now we also need to make the appropriate change for ufw:
 sudo ufw allow <custom_ssh_port>/tcp
 ```
 
-To roll back: sudo ufw delete allow <custom_ssh_port>/tcp
+> To roll back: sudo ufw delete allow <custom_ssh_port>/tcp
 
 Now let's remove the rule to allow communication via TCP on port 22:
 
@@ -392,7 +391,7 @@ sudo ufw status
 
 <https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
-Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (when entering, it will ask you to enter the password  <ssh_key_pass>):
+&#x1F535; Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (youa are asked to enter the password <ssh_key_pass>):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
@@ -414,17 +413,16 @@ Is it necessary at all? Skipped for now
 
 ### 8.1. Installation
 
-Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we will deploy, both will formally be peers, but,
-for the network to "work", at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository: 
+Install Wireguard on the server side and &#x1F535; on the client side. &#x1F534; Within the network that we deploy, formally both server and clients are peers, but in order for the network to be working, at least one of them (in this case, the "server") must have a "white" ip. So, on the server side and on the client side, let's add the corresponding repository:  
 
 a) if debian \> 10 or ubuntu \>=20 (\>=18?)
 
-Direct hands - for example, if you add the corresponding repository via add-apt-repository, but this feature will not work until debian 11: 
+Adding corresponding repository (add-apt-repository...) have to let installing wireguard, but let's note that this feature does not work until debian 11: 
 
 ```
 apt-get install software-properties-common
 ``` 
-//the add-apt-repository command is now available 
+//the add-apt-repository command is now available:
 
 ```
 sudo add-apt-repository ppa:wireguard/wireguard
@@ -432,7 +430,7 @@ sudo add-apt-repository ppa:wireguard/wireguard
 
 b) if debian \~10 (with reservations 9).
 
-Therefore, before debian 11.0, you need to use backports, in the official repositories there are no wireguard. This line tells the package manager to also use the buster-backports repository to find and install packages (and contrib / non-free are the sections where apt will look for the main contributed and non-free software): 
+Therefore, for debian with version lower than 11.0, you need to use backports, in the official repositories there is no wireguard. This command tells the package manager to also use the buster-backports repository to find and install packages (and contrib / non-free are the sections where apt will look for the main contributed and non-free software): 
 
 ```
 sudo sh -c "echo 'deb http://deb.debian.org/debian buster-backports
