@@ -231,7 +231,7 @@ sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
 vi /home/<username>/.ssh/authorized_keys
 ```
 
-&#x1F535; At the moment, you can connect to the server from the client side using a password, the key is not used (but it is better not to do this): 
+&#x1F535; :information_source: At the moment, you can connect to the server from the client side using a password, the key is not used (but it is better not to do this): 
 
 ```
 ssh <username>@<server_ip_address>
@@ -263,7 +263,7 @@ Restart the ssh daemon for the changes to take effect:
 sudo systemctl restart ssh
 ```
 
-&#x1F535; At the moment, from the client's side, connection to the server is possible with a command (when entering, you are asked for a password **\<ssh_key_pass\>**):
+&#x1F535; :information_source: At the moment, from the client's side, connection to the server is possible with a command (when entering, you are asked for a password **\<ssh_key_pass\>**):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
@@ -391,7 +391,7 @@ sudo ufw status
 
 <https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
-&#x1F535; Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (youa are asked to enter the password <ssh_key_pass>):
+&#x1F535; :information_source: Now, in order to remotely connect via ssh, you need to enter the command, taking into account the non-standard port (youa are asked to enter the password <ssh_key_pass>):
 
 ```
 sudo ssh <username>@<server_ip_address> -i

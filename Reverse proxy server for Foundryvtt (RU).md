@@ -229,7 +229,7 @@ sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
 vi /home/<username>/.ssh/authorized_keys
 ```
 
-&#x1F535; В данный момент можно подключиться к серверу со стороны клиента по паролю, ключ не задействован (но лучше этого не делать):
+&#x1F535; :information_source: В данный момент можно подключиться к серверу со стороны клиента по паролю, ключ не задействован (но лучше этого не делать):
 
 ```
 ssh <username>@<server_ip_address>
@@ -262,7 +262,7 @@ UsePAM no
 sudo systemctl restart ssh
 ```
 
-&#x1F535; В данный момент со стороны клиента подключение к серверу возможно командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
+&#x1F535; :information_source: В данный момент со стороны клиента подключение к серверу возможно командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
@@ -390,7 +390,7 @@ sudo ufw status
 
 <https://www.cyberciti.biz/faq/howto-change-ssh-port-on-linux-or-unix-server/>
 
-&#x1F535; Теперь, чтобы удалённо подключиться по ssh, нужно ввести команду, с учётом нестандартного порта (при входе попросит ввести пароль <ssh_key_pass>):
+&#x1F535; :information_source: Теперь, чтобы удалённо подключиться по ssh, нужно ввести команду, с учётом нестандартного порта (при входе попросит ввести пароль <ssh_key_pass>):
 
 ```
 sudo ssh <username>@<server_ip_address> -i
