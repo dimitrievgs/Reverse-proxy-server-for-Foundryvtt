@@ -207,10 +207,10 @@ sudo ssh-keygen
 > Enter same passphrase again: **\<ssh_key_pass\>**
 >
 > Your identification has been saved in
-> /root/.ssh/id_rsa/\<custom_server_key_file\>
+> /root/.ssh/\<custom_server_key_file\>
 >
 > Your public key has been saved in
-> /root/.ssh/id_rsa/\<custom_server_key_file\>.pub
+> /root/.ssh/\<custom_server_key_file\>.pub
 >
 > \<\...\>
 
