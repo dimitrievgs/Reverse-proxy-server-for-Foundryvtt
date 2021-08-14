@@ -26,7 +26,7 @@ These commands are given for a server on debian> = 10, most likely, they are als
 
 Briefly about what will be done below: 
 
-![](media/Proxy-server_Foundryvtt_scheme_en.png)
+![](media/Proxy-server_Foundryvtt_scheme__en.png)
 
 ## Table of Contents<!-- omit in toc --> 
 - [1. vps/vds-provider](#1-vpsvds-provider)

@@ -26,7 +26,7 @@
 
 Кратко о том, что будет сделано ниже:
 
-![](media/Proxy-server_Foundryvtt_scheme_ru.png)
+![](media/Proxy-server_Foundryvtt_scheme__ru.png)
 
 ## Оглавление<!-- omit in toc --> 
 - [1. vps/vds-провайдер](#1-vpsvds-провайдер)

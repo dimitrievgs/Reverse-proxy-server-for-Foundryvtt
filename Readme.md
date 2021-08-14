@@ -6,4 +6,4 @@ Instructions:
 * [in English](./Reverse%20proxy%20server%20for%20Foundryvtt%20(EN).md)  
 * [in Russian](./Reverse%20proxy%20server%20for%20Foundryvtt%20(RU).md)  
 
-![](media/Proxy-server_Foundryvtt_scheme_en.png)
+![](media/Proxy-server_Foundryvtt_scheme__en.png)
