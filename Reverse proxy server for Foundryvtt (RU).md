@@ -42,11 +42,12 @@
   - [8.3. Запись настроек в файлы конфигураций](#83-запись-настроек-в-файлы-конфигураций)
     - [8.3.1. Пропишем вручную](#831-пропишем-вручную)
     - [8.3.2. Использование скрипта для генерации файлов настроек](#832-использование-скрипта-для-генерации-файлов-настроек)
-  - [8.4. Запуск интерфейсов Wireguard с нужной конфигурацией](#84-запуск-интерфейсов-wireguard-с-нужной-конфигурацией)
-  - [8.5. Открытие UDP-порта](#85-открытие-udp-порта)
-    - [8.5.1. Debian / Ubuntu](#851-debian--ubuntu)
-    - [8.5.2. Windows 10](#852-windows-10)
-  - [8.6. Проверка соединения](#86-проверка-соединения)
+  - [8.4. VPN](#84-vpn)
+  - [8.5. Запуск интерфейсов Wireguard с нужной конфигурацией](#85-запуск-интерфейсов-wireguard-с-нужной-конфигурацией)
+  - [8.6. Открытие UDP-порта](#86-открытие-udp-порта)
+    - [8.6.1. Debian / Ubuntu](#861-debian--ubuntu)
+    - [8.6.2. Windows 10](#862-windows-10)
+  - [8.7. Проверка соединения](#87-проверка-соединения)
 - [9. Регистрация домена и привязка его к ip vps'а](#9-регистрация-домена-и-привязка-его-к-ip-vpsа)
 - [10. Развёртывание nginx сервера, как прокси, который предоставляет доступ к одному из пиров сети wireguard по порту 30000](#10-развёртывание-nginx-сервера-как-прокси-который-предоставляет-доступ-к-одному-из-пиров-сети-wireguard-по-порту-30000)
   - [10.1. Установка и настройка доступа через http](#101-установка-и-настройка-доступа-через-http)
@@ -475,7 +476,7 @@ sudo vi /etc/sysctl.conf
 
 ```
 net.ipv4.ip_forward = 1
-
+????первой строчки достаточно?
 net.ipv6.conf.default.forwarding = 1
 
 net.ipv6.conf.all.forwarding = 1
@@ -564,13 +565,13 @@ ListenPort = <custom_wireguard_port>
 PrivateKey = <server_private>
 
 PostUp = iptables -A FORWARD -i <wg_0> -j ACCEPT; iptables -t nat
--A POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -A FORWARD -i
-<wg_0> -j ACCEPT; ip6tables -t nat -A POSTROUTING -o enp0s8 -j
+-A POSTROUTING -o eth0 -j MASQUERADE; ip6tables -A FORWARD -i
+<wg_0> -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j
 MASQUERADE
 
 PostDown = iptables -D FORWARD -i <wg_0> -j ACCEPT; iptables -t
-nat -D POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -D FORWARD -i
-<wg_0> -j ACCEPT; ip6tables -t nat -D POSTROUTING -o enp0s8 -j
+nat -D POSTROUTING -o eth0 -j MASQUERADE; ip6tables -D FORWARD -i
+<wg_0> -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j
 MASQUERADE
 
 [Peer]
@@ -588,6 +589,14 @@ AllowedIPs = 10.10.0.<N+2>/32
 
 //Комментарий: \<custom_wireguard_port\> также является wg_0 в PostUp и PostDown. AllowedIPs отвечает за таблицу роутинга и, используя там 32,
 мы говорим, что на той стороне только один адрес. Address - это настройки для сетевого интерфейса, тут должно быть 24, т.к. у всей сети 24 маска.
+
+eth0 = название сетевого интерфейса — оно должно соответствовать общедоступному сетевому адаптеру, в моем случае это eth0. Вывести список адаптеров можно командой:
+
+```
+ip a
+```
+
+Выберите из списка тот, которому соответствует внешний IP-адрес.
 
 Теперь создадим конфигурационные файлы для клиентов:
 
@@ -641,14 +650,32 @@ sudo vi <script_folder>/gen_key
 
 Запустим:
 ```
-#sudo <script_folder>/gen_key <script_folder> <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
+sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
 ```
 
 Все ключи будут храниться в файле \<script_folder\>/keys. 
 
 Содержимое \<script_folder\>/\<wg_0\>.conf нужно скопировать на сервер в файл /etc/wireguard/\<wg_0\>.conf. Содержимое \<script_folder\>/client_\<N\>.conf нужно скопировать на машину клиента в файл /etc/wireguard/\<wg_N\>.conf.
 
-### 8.4. Запуск интерфейсов Wireguard с нужной конфигурацией
+### 8.4. VPN
+
+Если нужно, чтобы один из клиентов мог использовать сервер для vpn-туннелей, нужно немного изменить настройку для его машины:
+
+```
+[Interface]
+PrivateKey = <client_private_N>
+Address = 10.10.0.<N+1>/32
+DNS = 8.8.8.8
+
+[Peer]
+PublicKey = <server_public>
+AllowedIPs = 0.0.0.0/0
+Endpoint = <server_ip_address>:<custom_wireguard_port>
+PersistentKeepalive = 25
+```
+
+
+### 8.5. Запуск интерфейсов Wireguard с нужной конфигурацией
 
 &#x1F534; Запустим интерфейсы на стороне сервера и клиента, команды в данном блоке нужно будет запустить и на той, и на другой стороне. Для простоты я использую название \<wg_0\>, &#x1F535; для каждого клиента будет соответствующее выбранное название \<wg_N\>. Если клиент на Windows 10, то нужно просто добавить файл конфигурации в программе Wireguard ("Добавить туннель").
 
@@ -705,11 +732,11 @@ sudo systemctl start wg-quick@<wg_K+1>
 ```
 </details>
 
-### 8.5. Открытие UDP-порта
+### 8.6. Открытие UDP-порта
 
 &#x1F535; Здесь всё сильно зависит от используемой ОС, брандмауэров, файрволов, проч (как и вся клиентская часть, отмеченная синим). Wireguard работает с udp, поэтому нужно открыть соответствующие порты для получения и отправки трафика через UDP.
 
-#### 8.5.1. Debian / Ubuntu
+#### 8.6.1. Debian / Ubuntu
 
 Для файрвола ufw открыть UDP-порт:
 
@@ -719,7 +746,7 @@ sudo ufw allow <custom_wireguard_port>/udp
 sudo ufw status
 ```
 
-#### 8.5.2. Windows 10
+#### 8.6.2. Windows 10
 
 На windows 10 для встроенного брандмауэра (возможно, не достаточно):
 
@@ -731,7 +758,7 @@ sudo ufw status
 
 В случае антивируса, нужно добавить виртуальную сеть, создаваемую Wireguard, в доверенные.
 
-### 8.6. Проверка соединения
+### 8.7. Проверка соединения
 
 Чтобы проверить соединение между пирами в сети Wireguard, вы можете использовать утилиту ping.
 

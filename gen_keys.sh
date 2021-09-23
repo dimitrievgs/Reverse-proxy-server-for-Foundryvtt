@@ -1,6 +1,6 @@
 #!/bin/bash
-#$1 - target_dir, $2 - server_conf_file_name, $3 - peers_Nr, $4 - server-IP, $5 - UDP-port
-#sudo /root/wireguard/gen_key /root/wireguard server_conf 10 XXX.XXX.XXX.XXX 30000
+#$1 - target_dir, $2 - server_conf_file_name, $3 - peers_Nr, $4 - server-IP, $5 - UDP-port, $6 - server's network interface
+#sudo /root/wireguard/gen_key /root/wireguard/keys server_conf 10 XXX.XXX.XXX.XXX 30000 eth0
 
 dir_name=${1} #$(dirname "${1}")
 echo $dir_name
@@ -46,8 +46,8 @@ echo "[Interface]" >> $server_conf_name
 echo "Address=10.10.0.1/24" >> $server_conf_name
 echo "ListenPort=$5" >> $server_conf_name
 echo "PrivateKey=${gkeys[1]}" >> $server_conf_name
-echo "PostUp=iptables -A FORWARD -i $2 -j ACCEPT; iptables -t nat -A POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -A FORWARD -i $2 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o enp0s8 -j MASQUERADE" >> $server_conf_name
-echo "PostDown=iptables -D FORWARD -i $2 -j ACCEPT; iptables -t nat -D POSTROUTING -o enp0s8 -j MASQUERADE; ip6tables -D FORWARD -i $2 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o enp0s8 -j MASQUERADE" >> $server_conf_name
+echo "PostUp=iptables -A FORWARD -i $2 -j ACCEPT; iptables -t nat -A POSTROUTING -o $6 -j MASQUERADE; ip6tables -A FORWARD -i $2 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o $6 -j MASQUERADE" >> $server_conf_name
+echo "PostDown=iptables -D FORWARD -i $2 -j ACCEPT; iptables -t nat -D POSTROUTING -o $6 -j MASQUERADE; ip6tables -D FORWARD -i $2 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o $6 -j MASQUERADE" >> $server_conf_name
 
 for (( cl_n = 2; cl_n <= $3 ; cl_n++ ))
 do
