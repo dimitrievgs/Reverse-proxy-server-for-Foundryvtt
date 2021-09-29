@@ -650,7 +650,7 @@ sudo vi <script_folder>/gen_key
 
 Запустим:
 ```
-sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
+sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port> <eth0>
 ```
 
 Все ключи будут храниться в файле \<script_folder\>/keys. 

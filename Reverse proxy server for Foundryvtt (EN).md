@@ -639,7 +639,7 @@ sudo vi <script_folder>/gen_key
 
 Run it:
 ```
-#sudo <script_folder>/gen_key <script_folder> <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
+#sudo <script_folder>/gen_key <script_folder> <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port> <eth0>
 ```
 
 All keys will be stored in a file \<script_folder\>/keys. 
