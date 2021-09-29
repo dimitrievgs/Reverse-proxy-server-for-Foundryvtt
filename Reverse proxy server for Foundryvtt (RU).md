@@ -468,7 +468,7 @@ sudo apt-get install linux-headers-$(uname -r)
 &#x1F534; Теперь приступим к настройке Wireguard.
 
 Для того, чтобы пакеты перенаправлялись туда, куда надо, нужно разрешить перенаправление сетевых пакетов на уровне ядра. Для этого откроем файл /etc/sysctl.conf и добавим в конец такие строки
-(<https://losst.ru/ustanovka-wireguard-v-ubuntu>):
+(<https://losst.ru/ustanovka-wireguard-v-ubuntu>), значение директив приведено в комментариях к файлу /etc/sysctl.conf:
 
 ```
 sudo vi /etc/sysctl.conf
@@ -476,18 +476,6 @@ sudo vi /etc/sysctl.conf
 
 ```
 net.ipv4.ip_forward = 1
-????первой строчки достаточно?
-net.ipv6.conf.default.forwarding = 1
-
-net.ipv6.conf.all.forwarding = 1
-
-net.ipv4.conf.all.rp_filter = 1
-
-net.ipv4.conf.default.proxy_arp = 0
-
-net.ipv4.conf.default.send_redirects = 1
-
-net.ipv4.conf.all.send_redirects = 0
 ```
 
 Затем необходимо выполнить команду sysctl -p, чтобы система перечитала конфигурацию:
@@ -656,6 +644,7 @@ sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_
 Все ключи будут храниться в файле \<script_folder\>/keys. 
 
 Содержимое \<script_folder\>/\<wg_0\>.conf нужно скопировать на сервер в файл /etc/wireguard/\<wg_0\>.conf. Содержимое \<script_folder\>/client_\<N\>.conf нужно скопировать на машину клиента в файл /etc/wireguard/\<wg_N\>.conf.
+
 
 ### 8.4. VPN
 

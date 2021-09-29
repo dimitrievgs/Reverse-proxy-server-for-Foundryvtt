@@ -42,11 +42,12 @@ Briefly about what will be done below:
   - [8.3. Writing settings to configuration files](#83-writing-settings-to-configuration-files)
     - [8.3.1. Make configurations' texts manually](#831-make-configurations-texts-manually)
     - [8.3.2. Using a script to generate configurations' files](#832-using-a-script-to-generate-configurations-files)
-  - [8.4. Launch Wireguard Interfaces with Desired Configuration](#84-launch-wireguard-interfaces-with-desired-configuration)
-  - [8.5. Opening UDP-port](#85-opening-udp-port)
-    - [8.5.1. Debian / Ubuntu](#851-debian--ubuntu)
-    - [8.5.2. Windows 10](#852-windows-10)
-  - [8.6. Connection test](#86-connection-test)
+  - [8.4. VPN](#84-vpn)
+  - [8.5. Launch Wireguard Interfaces with Desired Configuration](#85-launch-wireguard-interfaces-with-desired-configuration)
+  - [8.6. Opening UDP-port](#86-opening-udp-port)
+    - [8.6.1. Debian / Ubuntu](#861-debian--ubuntu)
+    - [8.6.2. Windows 10](#862-windows-10)
+  - [8.7. Connection test](#87-connection-test)
 - [9. Domain registration and binding it to ip of vps](#9-domain-registration-and-binding-it-to-ip-of-vps)
 - [10. Deploying an nginx server as a proxy that provides access to one of the peers of the wireguard network on port 30000](#10-deploying-an-nginx-server-as-a-proxy-that-provides-access-to-one-of-the-peers-of-the-wireguard-network-on-port-30000)
   - [10.1. Installing and configuring access via http](#101-installing-and-configuring-access-via-http)
@@ -465,7 +466,7 @@ sudo apt-get install linux-headers-$(uname -r)
 
 &#x1F534; Now let's start configuring Wireguard. 
 
-In order for packets to be redirected to the right place, you need to enable redirection of network packets at the kernel level. To do this, open the file /etc/sysctl.conf and add the following lines to the end (<https://losst.ru/ustanovka-wireguard-v-ubuntu>): 
+In order for packets to be redirected to the right place, you need to enable redirection of network packets at the kernel level. To do this, open the file /etc/sysctl.conf and add the following lines to the end (<https://losst.ru/ustanovka-wireguard-v-ubuntu>), the meaning of the directives is given in the comments in the /etc/sysctl.conf file: 
 
 ```
 sudo vi /etc/sysctl.conf
@@ -473,18 +474,6 @@ sudo vi /etc/sysctl.conf
 
 ```
 net.ipv4.ip_forward = 1
-
-net.ipv6.conf.default.forwarding = 1
-
-net.ipv6.conf.all.forwarding = 1
-
-net.ipv4.conf.all.rp_filter = 1
-
-net.ipv4.conf.default.proxy_arp = 0
-
-net.ipv4.conf.default.send_redirects = 1
-
-net.ipv4.conf.all.send_redirects = 0
 ```
 
 Then you need to run the command **sysctl -p** so that the system re-reads the configuration: 
@@ -646,7 +635,25 @@ All keys will be stored in a file \<script_folder\>/keys.
 
 You need to copy the contents of \<script_folder\>/\<wg_0\>.conf to the server in the file /etc/wireguard/\<wg_0\>.conf. 
 
-### 8.4. Launch Wireguard Interfaces with Desired Configuration 
+
+### 8.4. VPN
+
+If you want one of the clients to pass all traffic through VPN tunnel, you need to slightly change the setting for its machine:
+
+```
+[Interface]
+PrivateKey = <client_private_N>
+Address = 10.10.0.<N+1>/32
+DNS = 8.8.8.8
+
+[Peer]
+PublicKey = <server_public>
+AllowedIPs = 0.0.0.0/0
+Endpoint = <server_ip_address>:<custom_wireguard_port>
+PersistentKeepalive = 25
+```
+
+### 8.5. Launch Wireguard Interfaces with Desired Configuration 
 
 &#x1F534; Let's start the interfaces on the server and client side, the commands in this block
 you will need to run on both sides. For simplicity, I am using the name \<wg_0\>, &#x1F535; for each client there will be a corresponding chosen name \<wg_N\>. If the client is on Windows 10, then you just need to add the configuration file in the Wireguard program ("Add Tunnel"). 
@@ -705,11 +712,11 @@ sudo systemctl start wg-quick@<wg_K+1>
 ```
 </details>
 
-### 8.5. Opening UDP-port
+### 8.6. Opening UDP-port
 
 &#x1F535; Everything here depends a lot on the OS used, firewalls, firewalls, etc. (like the entire client part, marked in blue). Wireguard works with udp, so you need to open the appropriate ports to receive and send traffic over UDP. 
 
-#### 8.5.1. Debian / Ubuntu
+#### 8.6.1. Debian / Ubuntu
 
 For the ufw firewall, open UDP-port:
 
@@ -719,7 +726,7 @@ sudo ufw allow <custom_wireguard_port>/udp
 sudo ufw status
 ```
 
-#### 8.5.2. Windows 10
+#### 8.6.2. Windows 10
 
 On windows 10 for built-in firewall (maybe not enough): 
 
@@ -731,7 +738,7 @@ Control Panel -\> Windows Defender Firewall -\> Advanced Settings -\> Create two
 
 In the case of antivirus, you need to add the virtual network created by Wireguard to the trusted ones. 
 
-### 8.6. Connection test
+### 8.7. Connection test
 
 In order to test connection between peers in wireguard network you can use ping utility.
 
