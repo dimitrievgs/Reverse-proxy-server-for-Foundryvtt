@@ -267,8 +267,7 @@ sudo systemctl restart ssh
 &#x1F535; :information_source: В данный момент со стороны клиента подключение к серверу возможно командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
 
 ```
-sudo ssh <username>@<server_ip_address> -i
-/root/.ssh/<custom_server_key_file>
+sudo ssh <username>@<server_ip_address> -i /root/.ssh/<custom_server_key_file>
 ```
 
 Это позволяет осуществлять дальнейшие действия с сервером, подключившись через ssh пользователем \<username\> по ключу.
