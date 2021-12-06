@@ -4,6 +4,7 @@
 
 dir_name=${1} #$(dirname "${1}")
 echo $dir_name
+mkdir -p $dir_name
 
 info_file_name="${dir_name}/keys"
 touch $info_file_name
