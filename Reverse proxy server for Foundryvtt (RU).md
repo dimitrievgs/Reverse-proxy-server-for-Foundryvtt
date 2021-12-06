@@ -222,8 +222,7 @@ sudo ssh-keygen
 Теперь перешлём публичный ключ серверу, чтобы он записал содержимое в файл /home/\<username\>/.ssh/authorized_keys:
 
 ```
-sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
-<username>@<server_ip_address>
+sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub <username>@<server_ip_address>
 ```
 
 &#x1F534; Можно проверить, что ключ "дошёл", для этого на стороне сервера введём команду
