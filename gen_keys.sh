@@ -65,7 +65,7 @@ touch $client_conf_name
 
 echo "[Interface]" >> $client_conf_name
 echo "PrivateKey=${gkeys[$cl_n]}" >> $client_conf_name
-echo "Address=10.10.0.$cl_n/24" >> $client_conf_name
+echo "Address=10.10.0.$cl_n/32" >> $client_conf_name
 echo "[Peer]" >> $client_conf_name
 echo "PublicKey=${pkeys[1]}" >> $client_conf_name
 echo "Endpoint=$4:$5" >> $client_conf_name
