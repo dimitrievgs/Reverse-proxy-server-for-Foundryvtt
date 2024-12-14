@@ -222,8 +222,7 @@ sudo ssh-keygen
 Теперь перешлём публичный ключ серверу, чтобы он записал содержимое в файл /home/\<username\>/.ssh/authorized_keys:
 
 ```
-sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub
-<username>@<server_ip_address>
+sudo ssh-copy-id -i /root/.ssh/<custom_server_key_file>.pub <username>@<server_ip_address>
 ```
 
 &#x1F534; Можно проверить, что ключ "дошёл", для этого на стороне сервера введём команду
@@ -268,8 +267,7 @@ sudo systemctl restart ssh
 &#x1F535; :information_source: В данный момент со стороны клиента подключение к серверу возможно командой (при входе попросит ввести пароль **\<ssh_key_pass\>**):
 
 ```
-sudo ssh <username>@<server_ip_address> -i
-/root/.ssh/<custom_server_key_file>
+sudo ssh <username>@<server_ip_address> -i /root/.ssh/<custom_server_key_file>
 ```
 
 Это позволяет осуществлять дальнейшие действия с сервером, подключившись через ssh пользователем \<username\> по ключу.
@@ -638,7 +636,7 @@ sudo vi <script_folder>/gen_key
 
 Запустим:
 ```
-sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port>
+sudo <script_folder>/gen_key <script_folder>/keys <wg_0> <peers_number> <server_ip_address> <custom_wireguard_port> <eth0>
 ```
 
 Все ключи будут храниться в файле \<script_folder\>/keys. 
