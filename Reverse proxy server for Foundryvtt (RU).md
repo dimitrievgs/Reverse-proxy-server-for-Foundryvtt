@@ -950,6 +950,11 @@ sudo certbot --nginx
 sudo certbot renew --dry-run
 ```
 
+Ручное обновление сертификатов: 
+```
+sudo certbot renew
+```
+
 ### 10.3. Установка и настройка доступа через https
 
 После автоматической установки Certbot он должен был изменить

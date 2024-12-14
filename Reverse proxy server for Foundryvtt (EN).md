@@ -938,6 +938,11 @@ Let's check the automatic renewal of certificates:
 sudo certbot renew --dry-run
 ```
 
+Manual update of certificates: 
+```
+sudo certbot renew
+```
+
 ### 10.3. Installing and configuring access via https 
 
 After installing Certbot automatically, it had to change the configuration(s) like **/etc/nginx/sites-available/foundryvtt**, binding the certificates to them and making a number of other changes, including forced redirection of http requests to https. You can view the completed changes using the command 
